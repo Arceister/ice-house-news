@@ -3,15 +3,13 @@ package main
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/Arceister/ice-house-news/utils"
 )
 
 func main() {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+	r := utils.NewRequestHandler()
+	r.Chi.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"message": "Api Hit!"}`))
 	})
-	http.ListenAndServe(":5055", r)
+	http.ListenAndServe(":5055", r.Chi)
 }
