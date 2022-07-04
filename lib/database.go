@@ -8,16 +8,16 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-type Database struct {
+type DB struct {
 	DB *pgxpool.Pool
 }
 
-func NewDatabase(env Env) Database {
-	DBHost := env.DBHost
-	DBPort := env.DBPort
-	DBUsername := env.DBUsername
-	DBPassword := env.DBPassword
-	DBName := env.DBName
+func NewDB(env Database) DB {
+	DBHost := env.Host
+	DBPort := env.Port
+	DBUsername := env.Username
+	DBPassword := env.Password
+	DBName := env.Name
 
 	DBUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", DBUsername, DBPassword, DBHost, DBPort, DBName)
 
@@ -30,5 +30,5 @@ func NewDatabase(env Env) Database {
 		fmt.Println("Connected to Database!")
 	}
 
-	return Database{DB: db}
+	return DB{DB: db}
 }

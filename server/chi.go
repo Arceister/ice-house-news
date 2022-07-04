@@ -1,18 +1,18 @@
-package utils
+package server
 
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-type RequestHandler struct {
+type Server struct {
 	Chi *chi.Mux
 }
 
-func NewRequestHandler() RequestHandler {
+func NewServer() Server {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
-	return RequestHandler{
+	return Server{
 		Chi: router,
 	}
 }
