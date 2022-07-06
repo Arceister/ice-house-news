@@ -25,5 +25,6 @@ func (r UsersRoute) Setup(chi *chi.Mux) *chi.Mux {
 	chi.Get("/api/users/{uuid}", r.usersController.GetOneUserController)
 	chi.Post("/api/users", r.usersController.CreateUserController)
 	chi.Put("/api/users/{uuid}", r.usersController.UpdateUserController)
+	chi.Delete("/api/users/{uuid}", r.usersController.DeleteUserController)
 	return chi
 }

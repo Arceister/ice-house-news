@@ -75,3 +75,21 @@ func (c UsersController) UpdateUserController(w http.ResponseWriter, r *http.Req
 
 	server.ResponseJSON(w, 200, true, "User update success")
 }
+
+func (c UsersController) DeleteUserController(w http.ResponseWriter, r *http.Request) {
+	userUniqueId := chi.URLParam(r, "uuid")
+
+	commandTag, err := c.service.DeleteUserService(userUniqueId)
+
+	if commandTag.RowsAffected() != 1 {
+		server.ResponseJSON(w, 404, false, "User not found")
+		return
+	}
+
+	if err != nil {
+		server.ResponseJSON(w, 500, false, err.Error())
+		return
+	}
+
+	server.ResponseJSON(w, 200, true, "User deleted")
+}

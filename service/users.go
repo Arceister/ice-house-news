@@ -50,3 +50,7 @@ func (s UsersService) CreateUserService(userData entity.User) (pgconn.CommandTag
 func (s UsersService) UpdateUserService(uuid string, userData entity.User) (pgconn.CommandTag, error) {
 	return s.usecase.UpdateUserUsecase(uuid, userData)
 }
+
+func (s UsersService) DeleteUserService(uuid string) (pgconn.CommandTag, error) {
+	return s.usecase.DeleteUserUsecase(uuid)
+}

@@ -48,3 +48,7 @@ func (u UsersUsecase) UpdateUserUsecase(uuid string, userData entity.User) (pgco
 		uuid,
 	)
 }
+
+func (u UsersUsecase) DeleteUserUsecase(uuid string) (pgconn.CommandTag, error) {
+	return u.db.DB.Exec(context.Background(), "DELETE FROM users WHERE id = $1", uuid)
+}
