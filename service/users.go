@@ -4,6 +4,8 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/usecase"
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersService struct {
@@ -34,4 +36,13 @@ func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 	userData.Id = uuid.Must(uuid.Parse(uid))
 
 	return userData, err
+}
+
+func (s UsersService) CreateUserService(userData entity.User) (pgconn.CommandTag, error) {
+	var uniqueUserId string = uuid.Must(uuid.NewRandom()).String()
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
+	userData.Password = string(hashedPassword)
+
+	return s.usecase.CreateUserUsecase(uniqueUserId, userData)
 }

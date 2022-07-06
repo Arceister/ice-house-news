@@ -23,5 +23,6 @@ func NewUsersRouter(
 
 func (r UsersRoute) Setup(chi *chi.Mux) *chi.Mux {
 	chi.Get("/api/users/{uuid}", r.usersController.GetOneUserController)
+	chi.Post("/api/users", r.usersController.CreateUserController)
 	return chi
 }

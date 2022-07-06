@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/Arceister/ice-house-news/entity"
@@ -34,4 +35,22 @@ func (c UsersController) GetOneUserController(w http.ResponseWriter, r *http.Req
 	}
 
 	server.ResponseJSONData(w, 200, true, "get one user", result)
+}
+
+func (c UsersController) CreateUserController(w http.ResponseWriter, r *http.Request) {
+	var userData entity.User
+	json.NewDecoder(r.Body).Decode(&userData)
+
+	commandTag, err := c.service.CreateUserService(userData)
+	if commandTag.RowsAffected() != 1 {
+		server.ResponseJSON(w, 500, false, "User not created")
+		return
+	}
+
+	if err != nil {
+		server.ResponseJSON(w, 500, false, err.Error())
+		return
+	}
+
+	server.ResponseJSON(w, 200, true, "User create success")
 }
