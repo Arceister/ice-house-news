@@ -35,3 +35,16 @@ func (u UsersUsecase) CreateUserUsecase(uuid string, userData entity.User) (pgco
 		userData.Picture,
 	)
 }
+
+func (u UsersUsecase) UpdateUserUsecase(uuid string, userData entity.User) (pgconn.CommandTag, error) {
+	return u.db.DB.Exec(context.Background(),
+		"UPDATE users SET username = $1, password = $2, name = $3, bio = $4, web = $5, picture = $6 WHERE id = $7",
+		userData.Email,
+		userData.Password,
+		userData.Name,
+		userData.Bio,
+		userData.Web,
+		userData.Picture,
+		uuid,
+	)
+}

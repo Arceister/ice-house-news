@@ -46,3 +46,7 @@ func (s UsersService) CreateUserService(userData entity.User) (pgconn.CommandTag
 
 	return s.usecase.CreateUserUsecase(uniqueUserId, userData)
 }
+
+func (s UsersService) UpdateUserService(uuid string, userData entity.User) (pgconn.CommandTag, error) {
+	return s.usecase.UpdateUserUsecase(uuid, userData)
+}

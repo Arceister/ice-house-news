@@ -54,3 +54,24 @@ func (c UsersController) CreateUserController(w http.ResponseWriter, r *http.Req
 
 	server.ResponseJSON(w, 200, true, "User create success")
 }
+
+func (c UsersController) UpdateUserController(w http.ResponseWriter, r *http.Request) {
+	userUniqueId := chi.URLParam(r, "uuid")
+
+	var userData entity.User
+	json.NewDecoder(r.Body).Decode(&userData)
+
+	commandTag, err := c.service.UpdateUserService(userUniqueId, userData)
+
+	if commandTag.RowsAffected() != 1 {
+		server.ResponseJSON(w, 404, false, "User not found")
+		return
+	}
+
+	if err != nil {
+		server.ResponseJSON(w, 500, false, err.Error())
+		return
+	}
+
+	server.ResponseJSON(w, 200, true, "User update success")
+}
