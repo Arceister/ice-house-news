@@ -2,9 +2,11 @@ module github.com/Arceister/ice-house-news
 
 go 1.17
 
+require github.com/google/uuid v1.3.0
+
 require (
 	github.com/go-chi/chi/v5 v5.0.7 // indirect
-	github.com/google/uuid v1.3.0
+	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

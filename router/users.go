@@ -1,13 +1,21 @@
 package router
 
-import "github.com/Arceister/ice-house-news/server"
+import (
+	"github.com/Arceister/ice-house-news/controller"
+	"github.com/Arceister/ice-house-news/server"
+)
 
 type UsersRoute struct {
-	server server.Server
+	server          server.Server
+	usersController controller.UsersController
 }
 
-func NewUsersRouter(server server.Server) UsersRoute {
+func NewUsersRouter(
+	server server.Server,
+	usersController controller.UsersController,
+) UsersRoute {
 	return UsersRoute{
-		server: server,
+		server:          server,
+		usersController: usersController,
 	}
 }
