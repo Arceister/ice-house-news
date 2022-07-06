@@ -3,6 +3,7 @@ package router
 import (
 	"github.com/Arceister/ice-house-news/controller"
 	"github.com/Arceister/ice-house-news/server"
+	"github.com/go-chi/chi/v5"
 )
 
 type UsersRoute struct {
@@ -18,4 +19,9 @@ func NewUsersRouter(
 		server:          server,
 		usersController: usersController,
 	}
+}
+
+func (r UsersRoute) Setup(chi *chi.Mux) *chi.Mux {
+	chi.Get("/api/users/{uuid}", r.usersController.GetOneUserController)
+	return chi
 }

@@ -1,22 +1,30 @@
 package main
 
 import (
-	"context"
 	"net/http"
 
+	"github.com/Arceister/ice-house-news/controller"
 	"github.com/Arceister/ice-house-news/lib"
+	"github.com/Arceister/ice-house-news/router"
 	server "github.com/Arceister/ice-house-news/server"
+	"github.com/Arceister/ice-house-news/service"
+	"github.com/Arceister/ice-house-news/usecase"
 )
 
 func main() {
-	r := server.NewServer()
+	chiRouter := server.NewServer()
 
 	config := lib.NewConfig()
 	app := config.App
 	db := config.Database
 
 	database := lib.NewDB(db)
-	database.DB.Query(context.Background(), "SELECT 1=1 AS RESULT")
 
-	http.ListenAndServe(app.Port, r.Chi)
+	usersUsecase := usecase.NewUsersUsecase(database)
+	usersService := service.NewUsersService(usersUsecase)
+	usersController := controller.NewUsersController(usersService)
+	usersRouter := router.NewUsersRouter(chiRouter, usersController)
+	usersRouter.Setup(chiRouter.Chi)
+
+	http.ListenAndServe(app.Port, chiRouter.Chi)
 }
