@@ -11,3 +11,8 @@ type User struct {
 	Web      string    `json:"web"`
 	Picture  string    `json:"picture"`
 }
+
+type UserSignIn struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}

@@ -25,9 +25,15 @@ func main() {
 
 	usersUsecase := usecase.NewUsersUsecase(database)
 	usersService := service.NewUsersService(usersUsecase)
+
 	usersController := controller.NewUsersController(usersService)
+	authController := controller.NewAuthController(usersService)
+
 	usersRouter := router.NewUsersRouter(chiRouter, jwtMiddleware, usersController)
+	authRouter := router.NewAuthRouter(chiRouter, authController)
+
 	usersRouter.Setup(chiRouter.Chi)
+	authRouter.Setup(chiRouter.Chi)
 
 	http.ListenAndServe(app.Port, chiRouter.Chi)
 }
