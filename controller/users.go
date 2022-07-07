@@ -24,12 +24,10 @@ func (c UsersController) GetOneUserController(w http.ResponseWriter, r *http.Req
 	userUniqueId := chi.URLParam(r, "uuid")
 	result, err := c.service.GetOneUserService(userUniqueId)
 
-	if result == (entity.User{}) {
-		server.ResponseJSON(w, 404, false, "user not found")
+	if err != nil && err.Error() == "user not found" {
+		server.ResponseJSON(w, 404, false, err.Error())
 		return
-	}
-
-	if err != nil {
+	} else if err != nil {
 		server.ResponseJSON(w, 500, false, err.Error())
 		return
 	}

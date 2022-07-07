@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/usecase"
 	"github.com/google/uuid"
@@ -19,21 +21,11 @@ func NewUsersService(usecase usecase.UsersUsecase) UsersService {
 }
 
 func (s UsersService) GetOneUserService(id string) (entity.User, error) {
-	userData := entity.User{}
-	var uid string
+	userData, err := s.usecase.GetOneUserUsecase(id)
 
-	err := s.usecase.GetOneUserUsecase(id).Scan(&uid,
-		&userData.Email,
-		&userData.Password,
-		&userData.Name,
-		&userData.Bio,
-		&userData.Web,
-		&userData.Picture,
-	)
-	if err != nil {
-		return entity.User{}, err
+	if userData == (entity.User{}) {
+		return userData, errors.New("user not found")
 	}
-	userData.Id = uuid.Must(uuid.Parse(uid))
 
 	return userData, err
 }
