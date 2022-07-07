@@ -27,6 +27,7 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(authHeader) != 2 {
 			server.ResponseJSON(w, 401, false, "Malformed token")
+			return
 		} else {
 			jwtToken := authHeader[1]
 			token, err := jwt.Parse(jwtToken, func(t *jwt.Token) (interface{}, error) {
@@ -36,8 +37,14 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 				ctx := context.WithValue(r.Context(), props{}, claims)
 				next.ServeHTTP(w, r.WithContext(ctx))
+			} else if verification, ok := err.(*jwt.ValidationError); ok {
+				if verification.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+					server.ResponseJSON(w, 401, false, "Token expired")
+					return
+				}
 			} else {
 				server.ResponseJSON(w, 401, false, err.Error())
+				return
 			}
 		}
 	})
