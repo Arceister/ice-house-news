@@ -6,7 +6,6 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/usecase"
 	"github.com/google/uuid"
-	"github.com/jackc/pgconn"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,6 +46,6 @@ func (s UsersService) UpdateUserService(uuid string, userData entity.User) error
 	return s.usecase.UpdateUserUsecase(uuid, userData)
 }
 
-func (s UsersService) DeleteUserService(uuid string) (pgconn.CommandTag, error) {
+func (s UsersService) DeleteUserService(uuid string) error {
 	return s.usecase.DeleteUserUsecase(uuid)
 }

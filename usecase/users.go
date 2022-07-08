@@ -7,7 +7,6 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/google/uuid"
-	"github.com/jackc/pgconn"
 )
 
 type UsersUsecase struct {
@@ -75,6 +74,12 @@ func (u UsersUsecase) UpdateUserUsecase(id string, userData entity.User) error {
 	return err
 }
 
-func (u UsersUsecase) DeleteUserUsecase(uuid string) (pgconn.CommandTag, error) {
-	return u.db.DB.Exec(context.Background(), "DELETE FROM users WHERE id = $1", uuid)
+func (u UsersUsecase) DeleteUserUsecase(id string) error {
+	commandTag, err := u.db.DB.Exec(context.Background(), "DELETE FROM users WHERE id = $1", id)
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("user not found")
+	}
+
+	return err
 }

@@ -21,4 +21,5 @@ type UsersQuery interface {
 	GetOneUserUsecase(id string) (User, error)
 	CreateUserUsecase(id uuid.UUID, userData User) error
 	UpdateUserUsecase(id string, userData User) error
+	DeleteUserUsecase(id string) error
 }
