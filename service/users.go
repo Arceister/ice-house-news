@@ -42,10 +42,10 @@ func (s UsersService) CreateUserService(userData entity.User) error {
 	return s.usecase.CreateUserUsecase(uniqueUserId, userData)
 }
 
-func (s UsersService) UpdateUserService(uuid string, userData entity.User) error {
-	return s.usecase.UpdateUserUsecase(uuid, userData)
+func (s UsersService) UpdateUserService(id string, userData entity.User) error {
+	return s.usecase.UpdateUserUsecase(id, userData)
 }
 
-func (s UsersService) DeleteUserService(uuid string) error {
-	return s.usecase.DeleteUserUsecase(uuid)
+func (s UsersService) DeleteUserService(id string) error {
+	return s.usecase.DeleteUserUsecase(id)
 }
