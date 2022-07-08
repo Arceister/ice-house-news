@@ -55,14 +55,12 @@ func (c UsersController) UpdateUserController(w http.ResponseWriter, r *http.Req
 	var userData entity.User
 	json.NewDecoder(r.Body).Decode(&userData)
 
-	commandTag, err := c.service.UpdateUserService(userUniqueId, userData)
+	err := c.service.UpdateUserService(userUniqueId, userData)
 
-	if commandTag.RowsAffected() != 1 {
-		server.ResponseJSON(w, 404, false, "User not found")
+	if err != nil && err.Error() == "user not found" {
+		server.ResponseJSON(w, 404, false, err.Error())
 		return
-	}
-
-	if err != nil {
+	} else if err != nil {
 		server.ResponseJSON(w, 500, false, err.Error())
 		return
 	}

@@ -43,7 +43,7 @@ func (s UsersService) CreateUserService(userData entity.User) error {
 	return s.usecase.CreateUserUsecase(uniqueUserId, userData)
 }
 
-func (s UsersService) UpdateUserService(uuid string, userData entity.User) (pgconn.CommandTag, error) {
+func (s UsersService) UpdateUserService(uuid string, userData entity.User) error {
 	return s.usecase.UpdateUserUsecase(uuid, userData)
 }
 

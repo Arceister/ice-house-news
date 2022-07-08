@@ -56,8 +56,8 @@ func (u UsersUsecase) CreateUserUsecase(id uuid.UUID, userData entity.User) erro
 	return err
 }
 
-func (u UsersUsecase) UpdateUserUsecase(id string, userData entity.User) (pgconn.CommandTag, error) {
-	return u.db.DB.Exec(context.Background(),
+func (u UsersUsecase) UpdateUserUsecase(id string, userData entity.User) error {
+	commandTag, err := u.db.DB.Exec(context.Background(),
 		"UPDATE users SET email = $1, password = $2, name = $3, bio = $4, web = $5, picture = $6 WHERE id = $7",
 		userData.Email,
 		userData.Password,
@@ -67,6 +67,12 @@ func (u UsersUsecase) UpdateUserUsecase(id string, userData entity.User) (pgconn
 		userData.Picture,
 		id,
 	)
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("user not found")
+	}
+
+	return err
 }
 
 func (u UsersUsecase) DeleteUserUsecase(uuid string) (pgconn.CommandTag, error) {
