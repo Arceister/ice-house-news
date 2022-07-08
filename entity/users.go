@@ -16,3 +16,8 @@ type UserSignIn struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type UsersQuery interface {
+	GetOneUserUsecase(id string) (User, error)
+	CreateUserUsecase(id uuid.UUID, userData User) error
+}

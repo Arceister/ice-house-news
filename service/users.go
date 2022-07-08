@@ -30,10 +30,14 @@ func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 	return userData, err
 }
 
-func (s UsersService) CreateUserService(userData entity.User) (pgconn.CommandTag, error) {
-	var uniqueUserId string = uuid.Must(uuid.NewRandom()).String()
+func (s UsersService) CreateUserService(userData entity.User) error {
+	uniqueUserId := uuid.Must(uuid.NewRandom())
 
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
+	if err != nil {
+		return err
+	}
+
 	userData.Password = string(hashedPassword)
 
 	return s.usecase.CreateUserUsecase(uniqueUserId, userData)

@@ -2,9 +2,11 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 )
 
@@ -35,8 +37,8 @@ func (u UsersUsecase) GetOneUserUsecase(id string) (entity.User, error) {
 	return userData, err
 }
 
-func (u UsersUsecase) CreateUserUsecase(id string, userData entity.User) (pgconn.CommandTag, error) {
-	return u.db.DB.Exec(context.Background(),
+func (u UsersUsecase) CreateUserUsecase(id uuid.UUID, userData entity.User) error {
+	commandTag, err := u.db.DB.Exec(context.Background(),
 		"INSERT INTO users VALUES($1, $2, $3, $4, $5, $6, $7)",
 		id,
 		userData.Email,
@@ -46,6 +48,12 @@ func (u UsersUsecase) CreateUserUsecase(id string, userData entity.User) (pgconn
 		userData.Web,
 		userData.Picture,
 	)
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("user not created")
+	}
+
+	return err
 }
 
 func (u UsersUsecase) UpdateUserUsecase(id string, userData entity.User) (pgconn.CommandTag, error) {

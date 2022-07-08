@@ -39,11 +39,7 @@ func (c UsersController) CreateUserController(w http.ResponseWriter, r *http.Req
 	var userData entity.User
 	json.NewDecoder(r.Body).Decode(&userData)
 
-	commandTag, err := c.service.CreateUserService(userData)
-	if commandTag.RowsAffected() != 1 {
-		server.ResponseJSON(w, 500, false, "User not created")
-		return
-	}
+	err := c.service.CreateUserService(userData)
 
 	if err != nil {
 		server.ResponseJSON(w, 500, false, err.Error())
