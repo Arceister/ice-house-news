@@ -20,8 +20,6 @@ func NewMiddlewareJWT(appConfig lib.App) MiddlewareJWT {
 	}
 }
 
-type props struct{}
-
 func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
@@ -34,8 +32,13 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 				return []byte(m.appConfig.SecretKey), nil
 			})
 
+			if !token.Valid {
+				server.ResponseJSON(w, 500, false, "Invalid secret key!")
+				return
+			}
+
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-				ctx := context.WithValue(r.Context(), props{}, claims)
+				ctx := context.WithValue(r.Context(), "JWTProps", claims)
 				next.ServeHTTP(w, r.WithContext(ctx))
 			} else if verification, ok := err.(*jwt.ValidationError); ok {
 				if verification.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
