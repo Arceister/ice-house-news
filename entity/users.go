@@ -15,6 +15,10 @@ type User struct {
 }
 
 type UserSignIn struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    *string `json:"email"`
+	Password *string `json:"password"`
+}
+
+type UserToken struct {
+	Token string `json:"token"`
 }

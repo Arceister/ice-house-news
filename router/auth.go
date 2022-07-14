@@ -22,5 +22,6 @@ func NewAuthRouter(
 }
 
 func (r AuthRoute) Setup(chi *chi.Mux) *chi.Mux {
+	chi.Post("/api/auth/login", r.authHandler.UserSignInHandler)
 	return chi
 }

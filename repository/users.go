@@ -36,6 +36,23 @@ func (u UsersRepository) GetOneUserRepository(id string) (entity.User, error) {
 	return userData, err
 }
 
+func (u UsersRepository) GetUserByEmailRepository(email string) (entity.User, error) {
+	userData := entity.User{}
+
+	err := u.db.DB.QueryRow(context.Background(),
+		"SELECT id, email, password, name, bio, web, picture FROM users WHERE email = $1",
+		email).Scan(&userData.Id,
+		&userData.Email,
+		&userData.Password,
+		&userData.Name,
+		&userData.Bio,
+		&userData.Web,
+		&userData.Picture,
+	)
+
+	return userData, err
+}
+
 func (u UsersRepository) CreateUserRepository(id uuid.UUID, userData entity.User) error {
 	commandTag, err := u.db.DB.Exec(context.Background(),
 		"INSERT INTO users VALUES($1, $2, $3, $4, $5, $6, $7)",
