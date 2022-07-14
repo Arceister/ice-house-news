@@ -70,3 +70,19 @@ func (m MiddlewareJWT) GenerateNewToken(user entity.User) (*string, error) {
 
 	return &tokenString, nil
 }
+
+func (m MiddlewareJWT) ExtractClaims(tokenString string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return []byte(m.appConfig.SecretKey), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, err
+	} else {
+		return nil, err
+	}
+}
