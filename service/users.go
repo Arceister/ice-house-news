@@ -32,12 +32,12 @@ func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 func (s UsersService) CreateUserService(userData entity.User) error {
 	uniqueUserId := uuid.Must(uuid.NewRandom())
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*userData.Password), 10)
 	if err != nil {
 		return err
 	}
 
-	userData.Password = string(hashedPassword)
+	*userData.Password = string(hashedPassword)
 
 	return s.usecase.CreateUserUsecase(uniqueUserId, userData)
 }
