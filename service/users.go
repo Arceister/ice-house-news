@@ -4,23 +4,23 @@ import (
 	"errors"
 
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/usecase"
+	"github.com/Arceister/ice-house-news/repository"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersService struct {
-	usecase usecase.UsersUsecase
+	repository repository.UsersRepository
 }
 
-func NewUsersService(usecase usecase.UsersUsecase) UsersService {
+func NewUsersService(repository repository.UsersRepository) UsersService {
 	return UsersService{
-		usecase: usecase,
+		repository: repository,
 	}
 }
 
 func (s UsersService) GetOneUserService(id string) (entity.User, error) {
-	userData, err := s.usecase.GetOneUserUsecase(id)
+	userData, err := s.repository.GetOneUserRepository(id)
 
 	if userData == (entity.User{}) {
 		return userData, errors.New("user not found")
@@ -39,13 +39,13 @@ func (s UsersService) CreateUserService(userData entity.User) error {
 
 	*userData.Password = string(hashedPassword)
 
-	return s.usecase.CreateUserUsecase(uniqueUserId, userData)
+	return s.repository.CreateUserRepository(uniqueUserId, userData)
 }
 
 func (s UsersService) UpdateUserService(id string, userData entity.User) error {
-	return s.usecase.UpdateUserUsecase(id, userData)
+	return s.repository.UpdateUserRepository(id, userData)
 }
 
 func (s UsersService) DeleteUserService(id string) error {
-	return s.usecase.DeleteUserUsecase(id)
+	return s.repository.DeleteUserRepository(id)
 }

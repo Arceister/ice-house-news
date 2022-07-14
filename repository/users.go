@@ -1,4 +1,4 @@
-package usecase
+package repository
 
 import (
 	"context"
@@ -9,17 +9,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type UsersUsecase struct {
+type UsersRepository struct {
 	db lib.DB
 }
 
-func NewUsersUsecase(db lib.DB) UsersUsecase {
-	return UsersUsecase{
+func NewUsersRepository(db lib.DB) UsersRepository {
+	return UsersRepository{
 		db: db,
 	}
 }
 
-func (u UsersUsecase) GetOneUserUsecase(id string) (entity.User, error) {
+func (u UsersRepository) GetOneUserRepository(id string) (entity.User, error) {
 	userData := entity.User{}
 
 	err := u.db.DB.QueryRow(context.Background(),
@@ -36,7 +36,7 @@ func (u UsersUsecase) GetOneUserUsecase(id string) (entity.User, error) {
 	return userData, err
 }
 
-func (u UsersUsecase) CreateUserUsecase(id uuid.UUID, userData entity.User) error {
+func (u UsersRepository) CreateUserRepository(id uuid.UUID, userData entity.User) error {
 	commandTag, err := u.db.DB.Exec(context.Background(),
 		"INSERT INTO users VALUES($1, $2, $3, $4, $5, $6, $7)",
 		id,
@@ -55,7 +55,7 @@ func (u UsersUsecase) CreateUserUsecase(id uuid.UUID, userData entity.User) erro
 	return err
 }
 
-func (u UsersUsecase) UpdateUserUsecase(id string, userData entity.User) error {
+func (u UsersRepository) UpdateUserRepository(id string, userData entity.User) error {
 	commandTag, err := u.db.DB.Exec(context.Background(),
 		"UPDATE users SET email = $1, password = $2, name = $3, bio = $4, web = $5, picture = $6 WHERE id = $7",
 		userData.Email,
@@ -74,7 +74,7 @@ func (u UsersUsecase) UpdateUserUsecase(id string, userData entity.User) error {
 	return err
 }
 
-func (u UsersUsecase) DeleteUserUsecase(id string) error {
+func (u UsersRepository) DeleteUserRepository(id string) error {
 	commandTag, err := u.db.DB.Exec(context.Background(), "DELETE FROM users WHERE id = $1", id)
 
 	if commandTag.RowsAffected() != 1 {
