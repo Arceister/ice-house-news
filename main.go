@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/Arceister/ice-house-news/controller"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/router"
@@ -26,11 +26,11 @@ func main() {
 	usersUsecase := usecase.NewUsersUsecase(database)
 	usersService := service.NewUsersService(usersUsecase)
 
-	usersController := controller.NewUsersController(usersService)
-	authController := controller.NewAuthController(usersService)
+	usersHandler := handler.NewUsersHandler(usersService)
+	authHandler := handler.NewAuthHandler(usersService)
 
-	usersRouter := router.NewUsersRouter(chiRouter, jwtMiddleware, usersController)
-	authRouter := router.NewAuthRouter(chiRouter, authController)
+	usersRouter := router.NewUsersRouter(chiRouter, jwtMiddleware, usersHandler)
+	authRouter := router.NewAuthRouter(chiRouter, authHandler)
 
 	usersRouter.Setup(chiRouter.Chi)
 	authRouter.Setup(chiRouter.Chi)

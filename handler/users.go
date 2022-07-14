@@ -1,4 +1,4 @@
-package controller
+package handler
 
 import (
 	"encoding/json"
@@ -10,17 +10,17 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type UsersController struct {
+type UsersHandler struct {
 	service service.UsersService
 }
 
-func NewUsersController(service service.UsersService) UsersController {
-	return UsersController{
+func NewUsersHandler(service service.UsersService) UsersHandler {
+	return UsersHandler{
 		service: service,
 	}
 }
 
-func (c UsersController) GetOneUserController(w http.ResponseWriter, r *http.Request) {
+func (c UsersHandler) GetOneUserHandler(w http.ResponseWriter, r *http.Request) {
 	userUniqueId := chi.URLParam(r, "uuid")
 	result, err := c.service.GetOneUserService(userUniqueId)
 
@@ -35,7 +35,7 @@ func (c UsersController) GetOneUserController(w http.ResponseWriter, r *http.Req
 	server.ResponseJSONData(w, 200, true, "get one user", result)
 }
 
-func (c UsersController) CreateUserController(w http.ResponseWriter, r *http.Request) {
+func (c UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userData entity.User
 	json.NewDecoder(r.Body).Decode(&userData)
 
@@ -49,7 +49,7 @@ func (c UsersController) CreateUserController(w http.ResponseWriter, r *http.Req
 	server.ResponseJSON(w, 200, true, "User create success")
 }
 
-func (c UsersController) UpdateUserController(w http.ResponseWriter, r *http.Request) {
+func (c UsersHandler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	userUniqueId := chi.URLParam(r, "uuid")
 
 	var userData entity.User
@@ -68,7 +68,7 @@ func (c UsersController) UpdateUserController(w http.ResponseWriter, r *http.Req
 	server.ResponseJSON(w, 200, true, "User update success")
 }
 
-func (c UsersController) DeleteUserController(w http.ResponseWriter, r *http.Request) {
+func (c UsersHandler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	userUniqueId := chi.URLParam(r, "uuid")
 
 	err := c.service.DeleteUserService(userUniqueId)
