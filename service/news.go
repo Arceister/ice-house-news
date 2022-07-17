@@ -1,6 +1,9 @@
 package service
 
-import "github.com/Arceister/ice-house-news/repository"
+import (
+	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/repository"
+)
 
 type NewsService struct {
 	newsRepository  repository.NewsRepository
@@ -15,4 +18,8 @@ func NewNewsService(
 		newsRepository:  newsRepository,
 		usersRepository: usersRepository,
 	}
+}
+
+func (s NewsService) GetNewsListService() ([]entity.NewsListOutput, error) {
+	return s.newsRepository.GetNewsListRepository()
 }
