@@ -22,5 +22,6 @@ func NewCategoriesRouter(
 }
 
 func (r CategoriesRoute) Setup(chi *chi.Mux) *chi.Mux {
+	chi.Get("/api/news/category", r.categoriesHandler.GetAllNewsCategoryHandler)
 	return chi
 }
