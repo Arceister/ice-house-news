@@ -18,6 +18,26 @@ type NewsListOutput struct {
 	Counter          NewsCounter  `json:"counter"`
 }
 
+type NewsDetail struct {
+	Id               uuid.UUID    `json:"id"`
+	Title            *string      `json:"title"`
+	SlugUrl          *string      `json:"slug_url"`
+	CoverImage       *string      `json:"cover_image"`
+	AdditionalImages []*string    `json:"additional_images"`
+	CreatedAt        time.Time    `json:"created_at"`
+	Nsfw             bool         `json:"nsfw"`
+	Category         NewsCategory `json:"category"`
+	Author           NewsAuthor   `json:"author"`
+	Counter          NewsCounter  `json:"counter"`
+	Content          *string      `json:"content"`
+}
+
+type NewsAuthor struct {
+	Id      uuid.UUID `json:"id"`
+	Name    *string   `json:"name"`
+	Picture *string   `json:"picture"`
+}
+
 type NewsCategory struct {
 	Id   uuid.UUID `json:"id"`
 	Name *string   `json:"name"`
