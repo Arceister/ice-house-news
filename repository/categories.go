@@ -31,3 +31,16 @@ func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categ
 
 	return err
 }
+
+func (r CategoriesRepository) GetCategoryByNameRepository(categoryName string) (entity.Categories, error) {
+	var CategoryDetails entity.Categories
+
+	err := r.db.DB.QueryRow(context.Background(),
+		"SELECT id, name FROM categories WHERE id = $1",
+		categoryName).Scan(
+		&CategoryDetails.Id,
+		&CategoryDetails.Name,
+	)
+
+	return CategoryDetails, err
+}
