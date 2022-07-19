@@ -20,7 +20,7 @@ func NewAuthHandler(userService service.UsersService) AuthHandler {
 }
 
 func (c AuthHandler) UserSignInHandler(w http.ResponseWriter, r *http.Request) {
-	var userInput entity.UserSignIn
+	var userInput entity.UserSignInRequest
 	json.NewDecoder(r.Body).Decode(&userInput)
 
 	token, err := c.userService.SignInService(userInput)

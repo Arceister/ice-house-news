@@ -6,6 +6,7 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/repository"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,12 +36,14 @@ func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 	return userData, err
 }
 
-func (s UsersService) SignInService(userInput entity.UserSignIn) (*string, error) {
-	if userInput.Email == nil || userInput.Password == nil || len(*userInput.Email) == 0 || len(*userInput.Password) == 0 {
-		return nil, errors.New("Email/Password Input Empty")
+func (s UsersService) SignInService(userInput entity.UserSignInRequest) (*string, error) {
+	validate := validator.New()
+	err := validate.Struct(userInput)
+	if err != nil {
+		return nil, errors.New("please input email/password")
 	}
 
-	userData, err := s.repository.GetUserByEmailRepository(*userInput.Email)
+	userData, err := s.repository.GetUserByEmailRepository(userInput.Email)
 
 	if err != nil && err.Error() == "no rows in result set" {
 		return nil, errors.New("user not found")
@@ -48,7 +51,7 @@ func (s UsersService) SignInService(userInput entity.UserSignIn) (*string, error
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(*userData.Password), []byte(*userInput.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(*userData.Password), []byte(userInput.Password))
 
 	if err != nil {
 		return nil, errors.New("wrong password")
