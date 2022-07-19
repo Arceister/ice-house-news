@@ -48,7 +48,7 @@ type NewsInsert struct {
 
 type NewsAuthor struct {
 	Id      uuid.UUID `json:"id"`
-	Name    *string   `json:"name"`
+	Name    string    `json:"name"`
 	Picture *string   `json:"picture"`
 }
 
