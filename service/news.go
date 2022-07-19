@@ -46,11 +46,24 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 	parsedUserUUID := uuid.Must(uuid.Parse(userId))
 
 	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
-	if categoryDetail == (entity.Categories{}) {
-		return errors.New("category not found")
+
+	if categoryDetail == (entity.Categories{}) && err.Error() == "no rows in result set" {
+		newCategoryUUID := uuid.Must(uuid.NewRandom())
+
+		newCategoryData := entity.Categories{}
+		newCategoryData.Id = newCategoryUUID
+		newCategoryData.Name = &newsInputData.Category
+
+		newCategoryId, err := s.categoriesRepository.CreateAndReturnCategoryRepository(newCategoryData)
+
+		if err != nil {
+			return err
+		}
+
+		categoryDetail.Id = *newCategoryId
 	}
 
-	if err != nil {
+	if err != nil && err.Error() != "no rows in result set" {
 		return err
 	}
 
