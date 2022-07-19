@@ -25,7 +25,7 @@ func (c AuthHandler) UserSignInHandler(w http.ResponseWriter, r *http.Request) {
 
 	token, err := c.userService.SignInService(userInput)
 	if err != nil && (err.Error() == "user not found" || err.Error() == "wrong password") {
-		server.ResponseJSON(w, http.StatusForbidden, false, err.Error())
+		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
 		return
 	} else if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
