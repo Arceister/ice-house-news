@@ -129,3 +129,63 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 
 	return NewsDetailOutput, err
 }
+
+func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
+	tx, err := r.db.DB.Begin(context.Background())
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback(context.Background())
+
+	commandTag, err := tx.Exec(context.Background(),
+		`INSERT INTO news(id, users_id, category_id, title, isi, slug_url, cover_image, nsfw) 
+	VALUES($1, $2, $3, $4, $5, $6, $7)`,
+		news.Id,
+		news.UserId,
+		news.CategoryId,
+		news.Title,
+		news.Content,
+		news.SlugUrl,
+		news.SlugUrl,
+		news.Nsfw)
+
+	if err != nil {
+		return err
+	}
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("create news failed")
+	}
+
+	for _, additionalImagesInput := range news.AdditionalImages {
+		commandTag, err := tx.Exec(context.Background(),
+			"INSERT INTO news_additional_images(news_id, image) VALUES ($1, $2)", news.Id, additionalImagesInput)
+
+		if err != nil {
+			return err
+		}
+
+		if commandTag.RowsAffected() != 1 {
+			return errors.New("input additional image failed")
+		}
+	}
+
+	commandTag, err = tx.Exec(context.Background(),
+		"INSERT INTO news_counter(news_id) VALUES ($1)", news.Id)
+
+	if err != nil {
+		return err
+	}
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("insert news counter failed")
+	}
+
+	err = tx.Commit(context.Background())
+	if err != nil {
+		return err
+	}
+
+	return err
+}
