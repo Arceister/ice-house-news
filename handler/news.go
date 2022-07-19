@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
+	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type NewsHandler struct {
@@ -42,4 +45,20 @@ func (h NewsHandler) GetNewsDetailHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	server.ResponseJSONData(w, http.StatusOK, true, "get news detail", newsDetail)
+}
+
+func (h NewsHandler) AddNewNewsHandler(w http.ResponseWriter, r *http.Request) {
+	var newsInput entity.NewsInsert
+
+	currentUserId := r.Context().Value("JWTProps").(jwt.MapClaims)["id"].(string)
+	json.NewDecoder(r.Body).Decode(&newsInput)
+
+	err := h.service.InsertNewsService(currentUserId, newsInput)
+
+	if err != nil {
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		return
+	}
+
+	server.ResponseJSON(w, http.StatusOK, true, "insert new news success")
 }

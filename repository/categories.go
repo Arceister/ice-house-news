@@ -36,11 +36,14 @@ func (r CategoriesRepository) GetCategoryByNameRepository(categoryName string) (
 	var CategoryDetails entity.Categories
 
 	err := r.db.DB.QueryRow(context.Background(),
-		"SELECT id, name FROM categories WHERE id = $1",
+		"SELECT id, name FROM categories WHERE name = $1",
 		categoryName).Scan(
 		&CategoryDetails.Id,
 		&CategoryDetails.Name,
 	)
+	if err != nil {
+		return entity.Categories{}, err
+	}
 
 	return CategoryDetails, err
 }

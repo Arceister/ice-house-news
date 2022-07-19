@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
@@ -139,16 +140,17 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 	defer tx.Rollback(context.Background())
 
 	commandTag, err := tx.Exec(context.Background(),
-		`INSERT INTO news(id, users_id, category_id, title, isi, slug_url, cover_image, nsfw) 
-	VALUES($1, $2, $3, $4, $5, $6, $7)`,
+		`INSERT INTO news(id, users_id, category_id, title, isi, slug_url, cover_image, nsfw, created_at) 
+	VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 		news.Id,
 		news.UserId,
 		news.CategoryId,
 		news.Title,
 		news.Content,
 		news.SlugUrl,
-		news.SlugUrl,
-		news.Nsfw)
+		news.CoverImage,
+		news.Nsfw,
+		time.Now())
 
 	if err != nil {
 		return err
