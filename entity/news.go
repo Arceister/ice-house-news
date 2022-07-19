@@ -38,11 +38,12 @@ type NewsInsert struct {
 	CategoryId       uuid.UUID
 	Title            string    `json:"title"`
 	SlugUrl          string    `json:"slug_url"`
-	CoverImage       string    `json:"cover_image"`
+	CoverImage       *string   `json:"cover_image"`
 	AdditionalImages []string  `json:"additional_images"`
 	CreatedAt        time.Time `json:"created_at"`
 	Nsfw             bool      `json:"nsfw"`
 	Content          string    `json:"content"`
+	Category         string    `json:"category"`
 }
 
 type NewsAuthor struct {

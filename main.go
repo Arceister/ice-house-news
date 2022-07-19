@@ -25,9 +25,10 @@ func main() {
 
 	usersRepository := repository.NewUsersRepository(database)
 	newsRepository := repository.NewNewsRepository(database)
+	categoriesRepository := repository.NewCategoriesRepository(database)
 
 	usersService := service.NewUsersService(usersRepository, jwtMiddleware)
-	newsService := service.NewNewsService(newsRepository, usersRepository)
+	newsService := service.NewNewsService(newsRepository, usersRepository, categoriesRepository)
 
 	usersHandler := handler.NewUsersHandler(usersService)
 	authHandler := handler.NewAuthHandler(usersService)

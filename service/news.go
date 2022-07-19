@@ -6,20 +6,24 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/repository"
+	"github.com/google/uuid"
 )
 
 type NewsService struct {
-	newsRepository  repository.NewsRepository
-	usersRepository repository.UsersRepository
+	newsRepository       repository.NewsRepository
+	usersRepository      repository.UsersRepository
+	categoriesRepository repository.CategoriesRepository
 }
 
 func NewNewsService(
 	newsRepository repository.NewsRepository,
 	usersRepository repository.UsersRepository,
+	categoriesRepository repository.CategoriesRepository,
 ) NewsService {
 	return NewsService{
-		newsRepository:  newsRepository,
-		usersRepository: usersRepository,
+		newsRepository:       newsRepository,
+		usersRepository:      usersRepository,
+		categoriesRepository: categoriesRepository,
 	}
 }
 
@@ -35,4 +39,29 @@ func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, err
 	}
 
 	return newsDetail, err
+}
+
+func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsInsert) error {
+	newsUUID := uuid.Must(uuid.NewRandom())
+	parsedUserUUID := uuid.Must(uuid.Parse(userId))
+
+	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
+	if categoryDetail == (entity.Categories{}) {
+		return errors.New("category not found")
+	}
+
+	if err != nil {
+		return err
+	}
+
+	newsInputData.Id = newsUUID
+	newsInputData.UserId = parsedUserUUID
+	newsInputData.CategoryId = categoryDetail.Id
+
+	err = s.newsRepository.AddNewNewsRepository(newsInputData)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
