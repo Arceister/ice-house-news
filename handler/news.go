@@ -86,3 +86,23 @@ func (h NewsHandler) UpdateNewsHandler(w http.ResponseWriter, r *http.Request) {
 
 	server.ResponseJSON(w, http.StatusOK, true, "news updated")
 }
+
+func (h NewsHandler) DeleteNewsHandler(w http.ResponseWriter, r *http.Request) {
+	currentUserId := r.Context().Value("JWTProps").(jwt.MapClaims)["id"].(string)
+	newsId := chi.URLParam(r, "newsId")
+
+	err := h.service.DeleteNewsService(currentUserId, newsId)
+
+	if err != nil && err.Error() == "news not found" {
+		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
+		return
+	} else if err != nil && err.Error() == "user not authenticated" {
+		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
+		return
+	} else if err != nil {
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		return
+	}
+
+	server.ResponseJSON(w, http.StatusOK, true, "news deleted")
+}

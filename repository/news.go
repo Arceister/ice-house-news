@@ -234,3 +234,14 @@ func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
 
 	return err
 }
+
+func (r NewsRepository) DeleteNewsRepository(newsId string) error {
+	commandTag, err := r.db.DB.Exec(context.Background(),
+		"DELETE FROM news WHERE id = $1", newsId)
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("news not found")
+	}
+
+	return err
+}

@@ -132,3 +132,19 @@ func (s NewsService) UpdateNewsService(
 
 	return err
 }
+
+func (s NewsService) DeleteNewsService(
+	userId string,
+	newsId string,
+) error {
+	newsAuthorUUID, err := s.newsRepository.GetNewsUserRepository(newsId)
+	if err != nil {
+		return err
+	}
+
+	if newsAuthorUUID == &userId {
+		return errors.New("user not authenticated")
+	}
+
+	return s.newsRepository.DeleteNewsRepository(newsId)
+}
