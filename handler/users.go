@@ -25,14 +25,14 @@ func (c UsersHandler) GetOneUserHandler(w http.ResponseWriter, r *http.Request) 
 	result, err := c.service.GetOneUserService(userUniqueId)
 
 	if err != nil && err.Error() == "user not found" {
-		server.ResponseJSON(w, 404, false, err.Error())
+		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
 		return
 	} else if err != nil {
-		server.ResponseJSON(w, 500, false, err.Error())
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
 
-	server.ResponseJSONData(w, 200, true, "get one user", result)
+	server.ResponseJSONData(w, http.StatusOK, true, "get one user", result)
 }
 
 func (c UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,11 +42,11 @@ func (c UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 	err := c.service.CreateUserService(userData)
 
 	if err != nil {
-		server.ResponseJSON(w, 500, false, err.Error())
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
 
-	server.ResponseJSON(w, 200, true, "User create success")
+	server.ResponseJSON(w, http.StatusOK, true, "User create success")
 }
 
 func (c UsersHandler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -58,14 +58,14 @@ func (c UsersHandler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) 
 	err := c.service.UpdateUserService(userUniqueId, userData)
 
 	if err != nil && err.Error() == "user not found" {
-		server.ResponseJSON(w, 404, false, err.Error())
+		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
 		return
 	} else if err != nil {
-		server.ResponseJSON(w, 500, false, err.Error())
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
 
-	server.ResponseJSON(w, 200, true, "User update success")
+	server.ResponseJSON(w, http.StatusOK, true, "User update success")
 }
 
 func (c UsersHandler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,12 +74,12 @@ func (c UsersHandler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) 
 	err := c.service.DeleteUserService(userUniqueId)
 
 	if err != nil && err.Error() == "user not found" {
-		server.ResponseJSON(w, 404, false, err.Error())
+		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
 		return
 	} else if err != nil {
-		server.ResponseJSON(w, 500, false, err.Error())
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
 
-	server.ResponseJSON(w, 200, true, "User deleted")
+	server.ResponseJSON(w, http.StatusOK, true, "User deleted")
 }

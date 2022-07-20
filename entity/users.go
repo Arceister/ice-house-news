@@ -6,17 +6,17 @@ import (
 
 type User struct {
 	Id       uuid.UUID `json:"id"`
-	Email    *string   `json:"email"`
-	Password *string   `json:"password"`
-	Name     *string   `json:"name"`
+	Email    string    `json:"email"`
+	Password string    `json:"password"`
+	Name     string    `json:"name"`
 	Bio      *string   `json:"bio"`
 	Web      *string   `json:"web"`
 	Picture  *string   `json:"picture"`
 }
 
-type UserSignIn struct {
-	Email    *string `json:"email"`
-	Password *string `json:"password"`
+type UserSignInRequest struct {
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type UserToken struct {
