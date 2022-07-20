@@ -24,17 +24,22 @@ func main() {
 	jwtMiddleware := middleware.NewMiddlewareJWT(app)
 
 	usersRepository := repository.NewUsersRepository(database)
+	categoriesRepository := repository.NewCategoriesRepository(database)
 
 	usersService := service.NewUsersService(usersRepository, jwtMiddleware)
+	categoriesService := service.NewCategoriesService(categoriesRepository)
 
 	usersHandler := handler.NewUsersHandler(usersService)
 	authHandler := handler.NewAuthHandler(usersService)
+	categoriesHandler := handler.NewCategoriesHandler(categoriesService)
 
 	usersRouter := router.NewUsersRouter(chiRouter, jwtMiddleware, usersHandler)
 	authRouter := router.NewAuthRouter(chiRouter, authHandler)
+	categoriesRouter := router.NewCategoriesRouter(chiRouter, categoriesHandler)
 
 	usersRouter.Setup(chiRouter.Chi)
 	authRouter.Setup(chiRouter.Chi)
+	categoriesRouter.Setup(chiRouter.Chi)
 
 	http.ListenAndServe(app.Port, chiRouter.Chi)
 }
