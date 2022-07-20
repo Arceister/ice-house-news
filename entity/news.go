@@ -32,10 +32,7 @@ type NewsDetail struct {
 	Content          *string      `json:"content"`
 }
 
-type NewsInsert struct {
-	Id               uuid.UUID
-	UserId           uuid.UUID
-	CategoryId       uuid.UUID
+type NewsInputRequest struct {
 	Title            string    `json:"title"`
 	SlugUrl          string    `json:"slug_url"`
 	CoverImage       *string   `json:"cover_image"`
@@ -44,6 +41,13 @@ type NewsInsert struct {
 	Nsfw             bool      `json:"nsfw"`
 	Content          string    `json:"content"`
 	Category         string    `json:"category"`
+}
+
+type NewsInsert struct {
+	Id         uuid.UUID
+	UserId     uuid.UUID
+	CategoryId uuid.UUID
+	NewsInputRequest
 }
 
 type NewsAuthor struct {

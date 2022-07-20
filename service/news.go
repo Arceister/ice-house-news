@@ -41,7 +41,11 @@ func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, err
 	return newsDetail, err
 }
 
-func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsInsert) error {
+func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsInputRequest) error {
+	var newsInsertData entity.NewsInsert
+
+	newsInsertData.NewsInputRequest = newsInputData
+
 	newsUUID := uuid.Must(uuid.NewRandom())
 	parsedUserUUID := uuid.Must(uuid.Parse(userId))
 
@@ -67,11 +71,11 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 		return err
 	}
 
-	newsInputData.Id = newsUUID
-	newsInputData.UserId = parsedUserUUID
-	newsInputData.CategoryId = categoryDetail.Id
+	newsInsertData.Id = newsUUID
+	newsInsertData.UserId = parsedUserUUID
+	newsInsertData.CategoryId = categoryDetail.Id
 
-	err = s.newsRepository.AddNewNewsRepository(newsInputData)
+	err = s.newsRepository.AddNewNewsRepository(newsInsertData)
 	if err != nil {
 		return err
 	}

@@ -48,7 +48,7 @@ func (h NewsHandler) GetNewsDetailHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h NewsHandler) AddNewNewsHandler(w http.ResponseWriter, r *http.Request) {
-	var newsInput entity.NewsInsert
+	var newsInput entity.NewsInputRequest
 
 	currentUserId := r.Context().Value("JWTProps").(jwt.MapClaims)["id"].(string)
 	json.NewDecoder(r.Body).Decode(&newsInput)
