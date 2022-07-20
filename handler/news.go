@@ -62,3 +62,27 @@ func (h NewsHandler) AddNewNewsHandler(w http.ResponseWriter, r *http.Request) {
 
 	server.ResponseJSON(w, http.StatusOK, true, "insert new news success")
 }
+
+func (h NewsHandler) UpdateNewsHandler(w http.ResponseWriter, r *http.Request) {
+	var newsInput entity.NewsInputRequest
+
+	currentUserId := r.Context().Value("JWTProps").(jwt.MapClaims)["id"].(string)
+	newsId := chi.URLParam(r, "newsId")
+
+	json.NewDecoder(r.Body).Decode(&newsInput)
+
+	err := h.service.UpdateNewsService(currentUserId, newsId, newsInput)
+
+	if err != nil && err.Error() == "news not found" {
+		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
+		return
+	} else if err != nil && err.Error() == "user not authenticated" {
+		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
+		return
+	} else if err != nil {
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		return
+	}
+
+	server.ResponseJSON(w, http.StatusOK, true, "news updated")
+}

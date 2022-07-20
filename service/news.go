@@ -82,3 +82,53 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 
 	return err
 }
+
+func (s NewsService) UpdateNewsService(
+	userId string,
+	newsId string,
+	newsInputData entity.NewsInputRequest,
+) error {
+	var newsUpdateData entity.NewsInsert
+
+	newsAuthorUUID, err := s.newsRepository.GetNewsUserRepository(newsId)
+	if err != nil {
+		return err
+	}
+
+	if newsAuthorUUID == &userId {
+		return errors.New("user not authenticated")
+	}
+
+	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
+
+	if categoryDetail == (entity.Categories{}) && err.Error() == "no rows in result set" {
+		newCategoryUUID := uuid.Must(uuid.NewRandom())
+
+		newCategoryData := entity.Categories{}
+		newCategoryData.Id = newCategoryUUID
+		newCategoryData.Name = &newsInputData.Category
+
+		newCategoryId, err := s.categoriesRepository.CreateAndReturnCategoryRepository(newCategoryData)
+
+		if err != nil {
+			return err
+		}
+
+		categoryDetail.Id = *newCategoryId
+	}
+
+	if err != nil && err.Error() != "no rows in result set" {
+		return err
+	}
+
+	newsUpdateData.NewsInputRequest = newsInputData
+	newsUpdateData.Id = uuid.Must(uuid.Parse(newsId))
+	newsUpdateData.CategoryId = categoryDetail.Id
+
+	err = s.newsRepository.UpdateNewsRepository(newsUpdateData)
+	if err != nil {
+		return err
+	}
+
+	return err
+}

@@ -131,6 +131,19 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	return NewsDetailOutput, err
 }
 
+func (r NewsRepository) GetNewsUserRepository(newsId string) (*string, error) {
+	var newsUUID string
+
+	err := r.db.DB.QueryRow(context.Background(),
+		`SELECT users_id FROM news WHERE id = $1`, newsId).Scan(&newsUUID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &newsUUID, err
+}
+
 func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 	tx, err := r.db.DB.Begin(context.Background())
 	if err != nil {
@@ -187,6 +200,36 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 	err = tx.Commit(context.Background())
 	if err != nil {
 		return err
+	}
+
+	return err
+}
+
+func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
+	commandTag, err := r.db.DB.Exec(context.Background(),
+		`UPDATE news SET
+		category_id = $1,
+		title = $2,
+		isi = $3,
+		slug_url = $4,
+		cover_image = $5,
+		nsfw = $6
+		WHERE id = $7
+		`,
+		news.CategoryId,
+		news.Title,
+		news.Content,
+		news.SlugUrl,
+		news.CoverImage,
+		news.Nsfw,
+		news.Id)
+
+	if err != nil {
+		return err
+	}
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("news not found")
 	}
 
 	return err
