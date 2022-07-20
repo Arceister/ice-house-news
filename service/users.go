@@ -4,18 +4,25 @@ import (
 	"errors"
 
 	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/repository"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersService struct {
 	repository repository.UsersRepository
+	middleware middleware.MiddlewareJWT
 }
 
-func NewUsersService(repository repository.UsersRepository) UsersService {
+func NewUsersService(
+	repository repository.UsersRepository,
+	middleware middleware.MiddlewareJWT,
+) UsersService {
 	return UsersService{
 		repository: repository,
+		middleware: middleware,
 	}
 }
 
@@ -27,6 +34,36 @@ func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 	}
 
 	return userData, err
+}
+
+func (s UsersService) SignInService(userInput entity.UserSignInRequest) (*string, error) {
+	validate := validator.New()
+	err := validate.Struct(userInput)
+	if err != nil {
+		return nil, errors.New("please input email/password")
+	}
+
+	userData, err := s.repository.GetUserByEmailRepository(userInput.Email)
+
+	if err != nil && err.Error() == "no rows in result set" {
+		return nil, errors.New("user not found")
+	} else if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(*userData.Password), []byte(userInput.Password))
+
+	if err != nil {
+		return nil, errors.New("wrong password")
+	}
+
+	token, err := s.middleware.GenerateNewToken(userData)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
 }
 
 func (s UsersService) CreateUserService(userData entity.User) error {

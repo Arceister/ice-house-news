@@ -14,7 +14,11 @@ type User struct {
 	Picture  *string   `json:"picture"`
 }
 
-type UserSignIn struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type UserSignInRequest struct {
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+type UserToken struct {
+	Token string `json:"token"`
 }
