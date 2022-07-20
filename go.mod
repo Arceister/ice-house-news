@@ -4,6 +4,8 @@ go 1.17
 
 require github.com/google/uuid v1.3.0
 
+require github.com/pkg/errors v0.8.1 // indirect
+
 require (
 	github.com/go-chi/chi/v5 v5.0.7 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
@@ -14,6 +16,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/pgtype v1.11.0 // indirect
+	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jackc/pgx/v4 v4.16.1 // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/joho/godotenv v1.4.0 // indirect
