@@ -51,7 +51,7 @@ func (s UsersService) SignInService(userInput entity.UserSignInRequest) (*string
 		return nil, err
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(*userData.Password), []byte(userInput.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(userInput.Password))
 
 	if err != nil {
 		return nil, errors.New("wrong password")
@@ -69,17 +69,24 @@ func (s UsersService) SignInService(userInput entity.UserSignInRequest) (*string
 func (s UsersService) CreateUserService(userData entity.User) error {
 	uniqueUserId := uuid.Must(uuid.NewRandom())
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*userData.Password), 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
 	if err != nil {
 		return err
 	}
 
-	*userData.Password = string(hashedPassword)
+	userData.Password = string(hashedPassword)
 
 	return s.repository.CreateUserRepository(uniqueUserId, userData)
 }
 
 func (s UsersService) UpdateUserService(id string, userData entity.User) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
+	if err != nil {
+		return err
+	}
+
+	userData.Password = string(hashedPassword)
+
 	return s.repository.UpdateUserRepository(id, userData)
 }
 
