@@ -26,7 +26,7 @@ func (s CategoriesService) CreateCategoryService(categoryName string) error {
 	newUuid := uuid.Must(uuid.NewRandom())
 
 	categoriesData.Id = newUuid
-	categoriesData.Name = &categoryName
+	categoriesData.Name = categoryName
 
 	return s.repository.CreateCategoryRepository(categoriesData)
 }
