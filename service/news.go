@@ -56,7 +56,7 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 
 		newCategoryData := entity.Categories{}
 		newCategoryData.Id = newCategoryUUID
-		newCategoryData.Name = &newsInputData.Category
+		newCategoryData.Name = newsInputData.Category
 
 		newCategoryId, err := s.categoriesRepository.CreateAndReturnCategoryRepository(newCategoryData)
 
@@ -106,7 +106,7 @@ func (s NewsService) UpdateNewsService(
 
 		newCategoryData := entity.Categories{}
 		newCategoryData.Id = newCategoryUUID
-		newCategoryData.Name = &newsInputData.Category
+		newCategoryData.Name = newsInputData.Category
 
 		newCategoryId, err := s.categoriesRepository.CreateAndReturnCategoryRepository(newCategoryData)
 
