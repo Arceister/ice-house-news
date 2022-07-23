@@ -16,13 +16,17 @@ func NewCategoriesService(repository repository.CategoriesRepository) Categories
 	}
 }
 
+func (s CategoriesService) GetAllNewsCategoryService() (*[]entity.Categories, error) {
+	return s.repository.GetAllNewsCategoryRepository()
+}
+
 func (s CategoriesService) CreateCategoryService(categoryName string) error {
 	var categoriesData entity.Categories
 
 	newUuid := uuid.Must(uuid.NewRandom())
 
 	categoriesData.Id = newUuid
-	categoriesData.Name = &categoryName
+	categoriesData.Name = categoryName
 
 	return s.repository.CreateCategoryRepository(categoriesData)
 }

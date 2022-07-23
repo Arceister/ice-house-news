@@ -20,20 +20,20 @@ func NewAuthHandler(userService service.UsersService) AuthHandler {
 }
 
 func (c AuthHandler) UserSignInHandler(w http.ResponseWriter, r *http.Request) {
-	var userInput entity.UserSignIn
+	var userInput entity.UserSignInRequest
 	json.NewDecoder(r.Body).Decode(&userInput)
 
 	token, err := c.userService.SignInService(userInput)
 	if err != nil && (err.Error() == "user not found" || err.Error() == "wrong password") {
-		server.ResponseJSON(w, 403, false, err.Error())
+		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
 		return
 	} else if err != nil {
-		server.ResponseJSON(w, 500, false, err.Error())
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
 
 	var userToken entity.UserToken
 	userToken.Token = *token
 
-	server.ResponseJSONData(w, 200, true, "Login successful!", userToken)
+	server.ResponseJSONData(w, http.StatusOK, true, "Login successful!", userToken)
 }
