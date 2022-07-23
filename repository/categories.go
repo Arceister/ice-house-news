@@ -6,6 +6,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
+	"github.com/google/uuid"
 )
 
 type CategoriesRepository struct {
@@ -59,4 +60,35 @@ func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categ
 	}
 
 	return err
+}
+
+func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.Categories) (*uuid.UUID, error) {
+	var returnedCategoryId uuid.UUID
+
+	err := r.db.DB.QueryRow(context.Background(),
+		"INSERT INTO categories(id, name) VALUES($1, $2) RETURNING id",
+		category.Id,
+		category.Name).Scan(&returnedCategoryId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &returnedCategoryId, err
+}
+
+func (r CategoriesRepository) GetCategoryByNameRepository(categoryName string) (entity.Categories, error) {
+	var CategoryDetails entity.Categories
+
+	err := r.db.DB.QueryRow(context.Background(),
+		"SELECT id, name FROM categories WHERE name = $1",
+		categoryName).Scan(
+		&CategoryDetails.Id,
+		&CategoryDetails.Name,
+	)
+	if err != nil {
+		return entity.Categories{}, err
+	}
+
+	return CategoryDetails, err
 }

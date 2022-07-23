@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v4"
 )
 
 type DB struct {
-	DB *pgxpool.Pool
+	DB *pgx.Conn
 }
 
 func NewDB(env Database) DB {
@@ -21,7 +21,7 @@ func NewDB(env Database) DB {
 
 	DBUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", DBUsername, DBPassword, DBHost, DBPort, DBName)
 
-	db, err := pgxpool.Connect(context.Background(), DBUrl)
+	db, err := pgx.Connect(context.Background(), DBUrl)
 
 	if err != nil {
 		fmt.Println("Unable to connect to database!")

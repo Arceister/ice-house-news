@@ -3,8 +3,21 @@ package service
 import "github.com/Arceister/ice-house-news/entity"
 
 type IUsersService interface {
-	GetOneUserService(id string) (entity.User, error)
-	CreateUserService(userData entity.User) error
-	UpdateUserService(id string, userData entity.User) error
-	DeleteUserService(id string) error
+	GetOneUserService(string) (entity.User, error)
+	SignInService(entity.UserSignIn) (*string, error)
+	CreateUserService(entity.User) error
+	UpdateUserService(string, entity.User) error
+	DeleteUserService(string) error
+}
+
+type ICategoriesService interface {
+	CreateCategoryService(string) error
+}
+
+type INewsService interface {
+	GetNewsListService() ([]entity.NewsListOutput, error)
+	GetNewsDetailService(string) (entity.NewsDetail, error)
+	InsertNewsService(string, entity.NewsInputRequest) error
+	UpdateNewsService(string, string, entity.NewsInputRequest) error
+	DeleteNewsService(string, string) error
 }
