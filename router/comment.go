@@ -4,6 +4,7 @@ import (
 	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/server"
+	"github.com/go-chi/chi/v5"
 )
 
 type CommentRoute struct {
@@ -22,4 +23,8 @@ func NewCommentRoute(
 		middlewareJWT:  middlewareJWT,
 		commentHandler: commentHandler,
 	}
+}
+
+func (r CommentRoute) Setup(chi *chi.Mux) *chi.Mux {
+	return chi
 }

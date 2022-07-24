@@ -26,25 +26,30 @@ func main() {
 	usersRepository := repository.NewUsersRepository(database)
 	newsRepository := repository.NewNewsRepository(database)
 	categoriesRepository := repository.NewCategoriesRepository(database)
+	commentRepository := repository.NewCommentRepository(database)
 
 	usersService := service.NewUsersService(usersRepository, jwtMiddleware)
 	newsService := service.NewNewsService(newsRepository, usersRepository, categoriesRepository)
 	categoriesService := service.NewCategoriesService(categoriesRepository)
+	commentService := service.NewCommentService(newsRepository, commentRepository)
 
 	usersHandler := handler.NewUsersHandler(usersService)
 	authHandler := handler.NewAuthHandler(usersService)
 	newsHandler := handler.NewNewsHandler(newsService)
 	categoriesHandler := handler.NewCategoriesHandler(categoriesService)
+	commentHandler := handler.NewCommentHandler(commentService)
 
 	usersRouter := router.NewUsersRouter(chiRouter, jwtMiddleware, usersHandler)
 	authRouter := router.NewAuthRouter(chiRouter, authHandler)
 	newsRouter := router.NewNewsRouter(chiRouter, jwtMiddleware, newsHandler)
 	categoriesRouter := router.NewCategoriesRouter(chiRouter, categoriesHandler)
+	commentRouter := router.NewCommentRoute(chiRouter, jwtMiddleware, commentHandler)
 
 	usersRouter.Setup(chiRouter.Chi)
 	authRouter.Setup(chiRouter.Chi)
 	newsRouter.Setup(chiRouter.Chi)
 	categoriesRouter.Setup(chiRouter.Chi)
+	commentRouter.Setup(chiRouter.Chi)
 
 	http.ListenAndServe(app.Port, chiRouter.Chi)
 }
