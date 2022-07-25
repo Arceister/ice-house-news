@@ -33,7 +33,11 @@ func (u UsersRepository) GetOneUserRepository(id string) (entity.User, error) {
 		&userData.Picture,
 	)
 
-	return userData, err
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	return userData, nil
 }
 
 func (u UsersRepository) GetUserByEmailRepository(email string) (entity.User, error) {
@@ -50,7 +54,11 @@ func (u UsersRepository) GetUserByEmailRepository(email string) (entity.User, er
 		&userData.Picture,
 	)
 
-	return userData, err
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	return userData, nil
 }
 
 func (u UsersRepository) CreateUserRepository(id uuid.UUID, userData entity.User) error {
@@ -64,12 +72,15 @@ func (u UsersRepository) CreateUserRepository(id uuid.UUID, userData entity.User
 		userData.Web,
 		userData.Picture,
 	)
+	if err != nil {
+		return err
+	}
 
 	if commandTag.RowsAffected() != 1 {
 		return errors.New("user not created")
 	}
 
-	return err
+	return nil
 }
 
 func (u UsersRepository) UpdateUserRepository(id string, userData entity.User) error {
@@ -84,19 +95,27 @@ func (u UsersRepository) UpdateUserRepository(id string, userData entity.User) e
 		id,
 	)
 
-	if commandTag.RowsAffected() != 1 {
-		return errors.New("user not found")
+	if err != nil {
+		return err
 	}
 
-	return err
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("user not updated")
+	}
+
+	return nil
 }
 
 func (u UsersRepository) DeleteUserRepository(id string) error {
 	commandTag, err := u.db.DB.Exec(context.Background(), "DELETE FROM users WHERE id = $1", id)
 
-	if commandTag.RowsAffected() != 1 {
-		return errors.New("user not found")
+	if err != nil {
+		return err
 	}
 
-	return err
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("user not deleted")
+	}
+
+	return nil
 }

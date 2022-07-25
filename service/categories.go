@@ -16,8 +16,13 @@ func NewCategoriesService(repository repository.CategoriesRepository) Categories
 	}
 }
 
-func (s CategoriesService) GetAllNewsCategoryService() (*[]entity.Categories, error) {
-	return s.repository.GetAllNewsCategoryRepository()
+func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, error) {
+	categories, err := s.repository.GetAllNewsCategoryRepository()
+	if err != nil {
+		return nil, err
+	}
+
+	return categories, nil
 }
 
 func (s CategoriesService) CreateCategoryService(categoryName string) error {
@@ -28,5 +33,10 @@ func (s CategoriesService) CreateCategoryService(categoryName string) error {
 	categoriesData.Id = newUuid
 	categoriesData.Name = categoryName
 
-	return s.repository.CreateCategoryRepository(categoriesData)
+	err := s.repository.CreateCategoryRepository(categoriesData)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

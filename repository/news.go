@@ -36,7 +36,7 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 	`)
 
 	if err != nil {
-		return NewsListOutput, err
+		return nil, err
 	}
 
 	defer rows.Close()
@@ -54,7 +54,7 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 		)
 
 		if err != nil {
-			return NewsListOutput, err
+			return nil, err
 		}
 
 		news.Category = category
@@ -63,7 +63,7 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 		NewsListOutput = append(NewsListOutput, news)
 	}
 
-	return NewsListOutput, err
+	return NewsListOutput, nil
 }
 
 func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetail, error) {
@@ -116,7 +116,7 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	}
 
 	if commandTag.RowsAffected() != 1 {
-		return entity.NewsDetail{}, errors.New("news not found")
+		return entity.NewsDetail{}, errors.New("view not updated")
 	}
 
 	err = tx.Commit(context.Background())
@@ -128,7 +128,7 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	NewsDetailOutput.Category = category
 	NewsDetailOutput.Counter = counter
 
-	return NewsDetailOutput, err
+	return NewsDetailOutput, nil
 }
 
 func (r NewsRepository) GetNewsUserRepository(newsId string) (*string, error) {
@@ -141,7 +141,7 @@ func (r NewsRepository) GetNewsUserRepository(newsId string) (*string, error) {
 		return nil, err
 	}
 
-	return &newsUUID, err
+	return &newsUUID, nil
 }
 
 func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
@@ -170,7 +170,7 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 	}
 
 	if commandTag.RowsAffected() != 1 {
-		return errors.New("create news failed")
+		return errors.New("news not created")
 	}
 
 	for _, additionalImagesInput := range news.AdditionalImages {
@@ -194,7 +194,7 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 	}
 
 	if commandTag.RowsAffected() != 1 {
-		return errors.New("insert news counter failed")
+		return errors.New("input news counter failed")
 	}
 
 	err = tx.Commit(context.Background())
@@ -202,7 +202,7 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
@@ -229,7 +229,7 @@ func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
 	}
 
 	if commandTag.RowsAffected() != 1 {
-		return errors.New("news not found")
+		return errors.New("news not updated")
 	}
 
 	return err
@@ -239,9 +239,13 @@ func (r NewsRepository) DeleteNewsRepository(newsId string) error {
 	commandTag, err := r.db.DB.Exec(context.Background(),
 		"DELETE FROM news WHERE id = $1", newsId)
 
-	if commandTag.RowsAffected() != 1 {
-		return errors.New("news not found")
+	if err != nil {
+		return err
 	}
 
-	return err
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("news not deleted")
+	}
+
+	return nil
 }

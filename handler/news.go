@@ -36,10 +36,11 @@ func (h NewsHandler) GetNewsDetailHandler(w http.ResponseWriter, r *http.Request
 	newsId := chi.URLParam(r, "newsId")
 	newsDetail, err := h.service.GetNewsDetailService(newsId)
 
-	if err != nil && err.Error() == "news not found" {
-		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
+	if err != nil && err.Error() == "no rows in result set" {
+		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
@@ -55,6 +56,12 @@ func (h NewsHandler) AddNewNewsHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := h.service.InsertNewsService(currentUserId, newsInput)
 
+	if err != nil && (err.Error() == "news not created" ||
+		err.Error() == "input additional image failed" ||
+		err.Error() == "input news counter failed") {
+		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
+		return
+	}
 	if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
@@ -73,13 +80,19 @@ func (h NewsHandler) UpdateNewsHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := h.service.UpdateNewsService(currentUserId, newsId, newsInput)
 
-	if err != nil && err.Error() == "news not found" {
-		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
+	if err != nil && err.Error() == "news not updated" {
+		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
 		return
-	} else if err != nil && err.Error() == "user not authenticated" {
+	}
+	if err != nil && err.Error() == "no rows in result set" {
+		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
+		return
+	}
+	if err != nil && err.Error() == "user not authenticated" {
 		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
@@ -93,13 +106,19 @@ func (h NewsHandler) DeleteNewsHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := h.service.DeleteNewsService(currentUserId, newsId)
 
-	if err != nil && err.Error() == "news not found" {
-		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
+	if err != nil && err.Error() == "news not deleted" {
+		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
 		return
-	} else if err != nil && err.Error() == "user not authenticated" {
+	}
+	if err != nil && err.Error() == "no rows in result set" {
+		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
+		return
+	}
+	if err != nil && err.Error() == "user not authenticated" {
 		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
 		return
-	} else if err != nil {
+	}
+	if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}

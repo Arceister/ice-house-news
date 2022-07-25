@@ -41,7 +41,9 @@ func (c UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	err := c.service.CreateUserService(userData)
 
-	if err != nil {
+	if err != nil && err.Error() == "user not created" {
+		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
+	} else if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
 	}
@@ -57,9 +59,8 @@ func (c UsersHandler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	err := c.service.UpdateUserService(userUniqueId, userData)
 
-	if err != nil && err.Error() == "user not found" {
-		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
-		return
+	if err != nil && err.Error() == "user not updated" {
+		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
 	} else if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return
@@ -73,9 +74,8 @@ func (c UsersHandler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	err := c.service.DeleteUserService(userUniqueId)
 
-	if err != nil && err.Error() == "user not found" {
-		server.ResponseJSON(w, http.StatusNotFound, false, err.Error())
-		return
+	if err != nil && err.Error() == "user not deleted" {
+		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
 	} else if err != nil {
 		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
 		return

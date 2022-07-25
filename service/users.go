@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"reflect"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/middleware"
@@ -29,11 +30,15 @@ func NewUsersService(
 func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 	userData, err := s.repository.GetOneUserRepository(id)
 
-	if userData == (entity.User{}) {
-		return userData, errors.New("user not found")
+	if err != nil {
+		return entity.User{}, err
 	}
 
-	return userData, err
+	if reflect.DeepEqual(&userData, entity.User{}) {
+		return entity.User{}, errors.New("user not found")
+	}
+
+	return userData, nil
 }
 
 func (s UsersService) SignInService(userInput entity.UserSignInRequest) (*string, error) {
@@ -76,7 +81,13 @@ func (s UsersService) CreateUserService(userData entity.User) error {
 
 	userData.Password = string(hashedPassword)
 
-	return s.repository.CreateUserRepository(uniqueUserId, userData)
+	err = s.repository.CreateUserRepository(uniqueUserId, userData)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s UsersService) UpdateUserService(id string, userData entity.User) error {
@@ -87,9 +98,19 @@ func (s UsersService) UpdateUserService(id string, userData entity.User) error {
 
 	userData.Password = string(hashedPassword)
 
-	return s.repository.UpdateUserRepository(id, userData)
+	err = s.repository.UpdateUserRepository(id, userData)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s UsersService) DeleteUserService(id string) error {
-	return s.repository.DeleteUserRepository(id)
+	err := s.repository.DeleteUserRepository(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

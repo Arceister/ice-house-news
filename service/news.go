@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"reflect"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/repository"
@@ -34,11 +33,11 @@ func (s NewsService) GetNewsListService() ([]entity.NewsListOutput, error) {
 func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, error) {
 	newsDetail, err := s.newsRepository.GetNewsDetailRepository(newsId)
 
-	if reflect.DeepEqual(newsDetail, entity.NewsDetail{}) {
-		return newsDetail, errors.New("news not found")
+	if err != nil {
+		return entity.NewsDetail{}, err
 	}
 
-	return newsDetail, err
+	return newsDetail, nil
 }
 
 func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsInputRequest) error {
@@ -51,7 +50,7 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 
 	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
 
-	if categoryDetail == (entity.Categories{}) && err.Error() == "no rows in result set" {
+	if err != nil && err.Error() == "no rows in result set" {
 		newCategoryUUID := uuid.Must(uuid.NewRandom())
 
 		newCategoryData := entity.Categories{}
@@ -64,7 +63,7 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 			return err
 		}
 
-		categoryDetail.Id = *newCategoryId
+		categoryDetail.Id = newCategoryId
 	}
 
 	if err != nil && err.Error() != "no rows in result set" {
@@ -80,7 +79,7 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func (s NewsService) UpdateNewsService(
@@ -101,7 +100,7 @@ func (s NewsService) UpdateNewsService(
 
 	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
 
-	if categoryDetail == (entity.Categories{}) && err.Error() == "no rows in result set" {
+	if err.Error() == "no rows in result set" {
 		newCategoryUUID := uuid.Must(uuid.NewRandom())
 
 		newCategoryData := entity.Categories{}
@@ -114,7 +113,7 @@ func (s NewsService) UpdateNewsService(
 			return err
 		}
 
-		categoryDetail.Id = *newCategoryId
+		categoryDetail.Id = newCategoryId
 	}
 
 	if err != nil && err.Error() != "no rows in result set" {
@@ -130,7 +129,7 @@ func (s NewsService) UpdateNewsService(
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func (s NewsService) DeleteNewsService(
@@ -146,5 +145,10 @@ func (s NewsService) DeleteNewsService(
 		return errors.New("user not authenticated")
 	}
 
-	return s.newsRepository.DeleteNewsRepository(newsId)
+	err = s.newsRepository.DeleteNewsRepository(newsId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

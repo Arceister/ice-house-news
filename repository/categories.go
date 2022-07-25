@@ -19,7 +19,7 @@ func NewCategoriesRepository(db lib.DB) CategoriesRepository {
 	}
 }
 
-func (r CategoriesRepository) GetAllNewsCategoryRepository() (*[]entity.Categories, error) {
+func (r CategoriesRepository) GetAllNewsCategoryRepository() ([]entity.Categories, error) {
 	var NewsCategories []entity.Categories
 
 	rows, err := r.db.DB.Query(context.Background(),
@@ -45,7 +45,7 @@ func (r CategoriesRepository) GetAllNewsCategoryRepository() (*[]entity.Categori
 		return nil, err
 	}
 
-	return &NewsCategories, err
+	return NewsCategories, nil
 }
 
 func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categories) error {
@@ -55,14 +55,18 @@ func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categ
 		categoryData.Name,
 	)
 
+	if err != nil {
+		return err
+	}
+
 	if commandTag.RowsAffected() != 1 {
 		return errors.New("category not created")
 	}
 
-	return err
+	return nil
 }
 
-func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.Categories) (*uuid.UUID, error) {
+func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.Categories) (uuid.UUID, error) {
 	var returnedCategoryId uuid.UUID
 
 	err := r.db.DB.QueryRow(context.Background(),
@@ -71,10 +75,10 @@ func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.
 		category.Name).Scan(&returnedCategoryId)
 
 	if err != nil {
-		return nil, err
+		return uuid.Nil, err
 	}
 
-	return &returnedCategoryId, err
+	return returnedCategoryId, nil
 }
 
 func (r CategoriesRepository) GetCategoryByNameRepository(categoryName string) (entity.Categories, error) {
@@ -90,5 +94,5 @@ func (r CategoriesRepository) GetCategoryByNameRepository(categoryName string) (
 		return entity.Categories{}, err
 	}
 
-	return CategoryDetails, err
+	return CategoryDetails, nil
 }
