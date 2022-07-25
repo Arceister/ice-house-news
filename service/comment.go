@@ -1,6 +1,9 @@
 package service
 
-import "github.com/Arceister/ice-house-news/repository"
+import (
+	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/repository"
+)
 
 type CommentService struct {
 	newsRepository    repository.NewsRepository
@@ -15,4 +18,13 @@ func NewCommentService(
 		newsRepository:    newsRepository,
 		commentRepository: commentRepository,
 	}
+}
+
+func (s CommentService) GetCommentsOnNewsService(newsId string) ([]entity.Comment, error) {
+	newsComment, err := s.commentRepository.GetCommentsOnNewsRepository(newsId)
+	if err != nil {
+		return nil, err
+	}
+
+	return newsComment, nil
 }
