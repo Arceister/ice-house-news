@@ -2,6 +2,8 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
@@ -56,4 +58,23 @@ func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.
 	}
 
 	return CommentsList, nil
+}
+
+func (r CommentRepository) InsertCommentRepository(commentDetails entity.CommentInsert) error {
+	commandTag, err := r.db.DB.Exec(context.Background(),
+		`
+	INSERT INTO news_comment(id, news_id, users_id, description, created_at) 
+	VALUES ($1, $2, $3, $4, $5)
+	`,
+		commentDetails.Id, commentDetails.NewsId, commentDetails.UserId, commentDetails.Description, time.Now())
+
+	if err != nil {
+		return err
+	}
+
+	if commandTag.RowsAffected() != 1 {
+		return errors.New("user insert failed")
+	}
+
+	return nil
 }

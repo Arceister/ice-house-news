@@ -27,5 +27,6 @@ func NewCommentRoute(
 
 func (r CommentRoute) Setup(chi *chi.Mux) *chi.Mux {
 	chi.With(r.middlewareJWT.JwtMiddleware).Get("/api/news/{newsId}/comment", r.commentHandler.GetCommentsOnNewsHandler)
+	chi.With(r.middlewareJWT.JwtMiddleware).Post("/api/news/{newsId}/comment", r.commentHandler.InsertCommentHandler)
 	return chi
 }
