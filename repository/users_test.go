@@ -369,3 +369,46 @@ func TestUpdateUserRepository(t *testing.T) {
 		})
 	}
 }
+
+func TestDeleteUserRepository(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	app := NewUsersRepository(
+		lib.DB{
+			DB: db,
+		},
+	)
+	tests := []struct {
+		name     string
+		s        UsersRepository
+		userUUID string
+		mock     func()
+		wantErr  bool
+	}{
+		{
+			name:     "OK",
+			s:        app,
+			userUUID: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
+			mock: func() {
+				mock.ExpectExec("DELETE FROM users").
+					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			err := tt.s.DeleteUserRepository(tt.userUUID)
+			if (err != nil) != tt.wantErr {
+				t.Error(err)
+				return
+			}
+		})
+	}
+}
