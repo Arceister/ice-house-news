@@ -192,3 +192,61 @@ func TestCreateUserRepository(t *testing.T) {
 		})
 	}
 }
+
+func TestUpdateUserRepository(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	app := NewUsersRepository(
+		lib.DB{
+			DB: db,
+		},
+	)
+	tests := []struct {
+		name     string
+		s        UsersRepository
+		userUUID string
+		request  entity.User
+		mock     func()
+		wantErr  bool
+	}{
+		{
+			name:     "OK",
+			s:        app,
+			userUUID: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
+			request: entity.User{
+				Email:    "updatedtestemail@email.com",
+				Password: "updated password",
+				Name:     "updated name",
+				Bio:      func(val string) *string { return &val }("updated bio"),
+				Web:      func(val string) *string { return &val }("updated web"),
+				Picture:  func(val string) *string { return &val }("updated picture"),
+			},
+			mock: func() {
+				mock.ExpectExec("UPDATE users").
+					WithArgs("updatedtestemail@email.com",
+						"updated password",
+						"updated name",
+						"updated bio",
+						"updated web",
+						"updated picture",
+						"72908c48-b68c-4d67-ae74-d1305f84fc4d").
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			err := tt.s.UpdateUserRepository(tt.userUUID, tt.request)
+			if (err != nil) != tt.wantErr {
+				t.Error(err)
+				return
+			}
+		})
+	}
+}
