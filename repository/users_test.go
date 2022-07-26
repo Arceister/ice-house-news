@@ -288,6 +288,31 @@ func TestUpdateUserRepository(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:     "Empty Name",
+			s:        app,
+			userUUID: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
+			request: entity.User{
+				Email:    "updatedtestemail@email.com",
+				Password: "updated password",
+				Name:     "",
+				Bio:      func(val string) *string { return &val }("updated bio"),
+				Web:      func(val string) *string { return &val }("updated web"),
+				Picture:  func(val string) *string { return &val }("updated picture"),
+			},
+			mock: func() {
+				mock.ExpectExec("UPDATE users").
+					WithArgs("updatedtestemail@email.com",
+						"updated password",
+						"",
+						"updated bio",
+						"updated web",
+						"updated picture",
+						"72908c48-b68c-4d67-ae74-d1305f84fc4d").
+					WillReturnError(errors.New("empty name"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
