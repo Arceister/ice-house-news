@@ -400,6 +400,17 @@ func TestDeleteUserRepository(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:     "User Not Found",
+			s:        app,
+			userUUID: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
+			mock: func() {
+				mock.ExpectExec("DELETE FROM users").
+					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4a").
+					WillReturnError(errors.New("user not found"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
