@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"reflect"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/middleware"
@@ -34,10 +33,6 @@ func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 		return entity.User{}, err
 	}
 
-	if reflect.DeepEqual(&userData, entity.User{}) {
-		return entity.User{}, errors.New("user not found")
-	}
-
 	return userData, nil
 }
 
@@ -50,7 +45,7 @@ func (s UsersService) SignInService(userInput entity.UserSignInRequest) (*string
 
 	userData, err := s.repository.GetUserByEmailRepository(userInput.Email)
 
-	if err != nil && err.Error() == "no rows in result set" {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		return nil, errors.New("user not found")
 	} else if err != nil {
 		return nil, err

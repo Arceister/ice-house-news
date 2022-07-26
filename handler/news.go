@@ -36,7 +36,7 @@ func (h NewsHandler) GetNewsDetailHandler(w http.ResponseWriter, r *http.Request
 	newsId := chi.URLParam(r, "newsId")
 	newsDetail, err := h.service.GetNewsDetailService(newsId)
 
-	if err != nil && err.Error() == "no rows in result set" {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
 		return
 	}
@@ -84,7 +84,7 @@ func (h NewsHandler) UpdateNewsHandler(w http.ResponseWriter, r *http.Request) {
 		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
 		return
 	}
-	if err != nil && err.Error() == "no rows in result set" {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
 		return
 	}
@@ -110,7 +110,7 @@ func (h NewsHandler) DeleteNewsHandler(w http.ResponseWriter, r *http.Request) {
 		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
 		return
 	}
-	if err != nil && err.Error() == "no rows in result set" {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
 		return
 	}

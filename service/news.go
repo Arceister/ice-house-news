@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/repository"
@@ -50,7 +51,7 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 
 	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
 
-	if err != nil && err.Error() == "no rows in result set" {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		newCategoryUUID := uuid.Must(uuid.NewRandom())
 
 		newCategoryData := entity.Categories{}
@@ -66,7 +67,7 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 		categoryDetail.Id = newCategoryId
 	}
 
-	if err != nil && err.Error() != "no rows in result set" {
+	if err != nil && err.Error() != "sql: no rows in result set" {
 		return err
 	}
 
@@ -93,14 +94,16 @@ func (s NewsService) UpdateNewsService(
 	if err != nil {
 		return err
 	}
+	fmt.Println(newsAuthorUUID)
+	fmt.Println(userId)
 
-	if newsAuthorUUID == &userId {
+	if newsAuthorUUID != userId {
 		return errors.New("user not authenticated")
 	}
 
 	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
 
-	if err.Error() == "no rows in result set" {
+	if err != nil && err.Error() == "sql: no rows in result set" {
 		newCategoryUUID := uuid.Must(uuid.NewRandom())
 
 		newCategoryData := entity.Categories{}
@@ -116,7 +119,7 @@ func (s NewsService) UpdateNewsService(
 		categoryDetail.Id = newCategoryId
 	}
 
-	if err != nil && err.Error() != "no rows in result set" {
+	if err != nil && err.Error() != "sql: no rows in result set" {
 		return err
 	}
 
@@ -141,7 +144,7 @@ func (s NewsService) DeleteNewsService(
 		return err
 	}
 
-	if newsAuthorUUID == &userId {
+	if newsAuthorUUID != userId {
 		return errors.New("user not authenticated")
 	}
 
