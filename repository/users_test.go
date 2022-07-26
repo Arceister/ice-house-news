@@ -161,6 +161,25 @@ func TestCreateUserRepository(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:     "Empty Name",
+			s:        app,
+			userUUID: uuid.MustParse("72908c48-b68c-4d67-ae74-d1305f84fc4d"),
+			request: entity.User{
+				Email:    "testemail@email.com",
+				Password: "123",
+				Name:     "",
+				Bio:      func(val string) *string { return &val }("Bio"),
+				Web:      func(val string) *string { return &val }("Web"),
+				Picture:  func(val string) *string { return &val }("Picture"),
+			},
+			mock: func() {
+				mock.ExpectExec("INSERT INTO users").
+					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "", "Bio", "Web", "Picture").
+					WillReturnError(errors.New("empty name"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
