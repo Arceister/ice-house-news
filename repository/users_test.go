@@ -180,6 +180,25 @@ func TestCreateUserRepository(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:     "Failed User Insert",
+			s:        app,
+			userUUID: uuid.MustParse("72908c48-b68c-4d67-ae74-d1305f84fc4d"),
+			request: entity.User{
+				Email:    "testemail@email.com",
+				Password: "123",
+				Name:     "Jagad",
+				Bio:      func(val string) *string { return &val }("Bio"),
+				Web:      func(val string) *string { return &val }("Web"),
+				Picture:  func(val string) *string { return &val }("Picture"),
+			},
+			mock: func() {
+				mock.ExpectExec("INSERT INTO users").
+					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "Jagad", "Bio", "Web", "Picture").
+					WillReturnResult(sqlmock.NewErrorResult(errors.New("insert user failed")))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
