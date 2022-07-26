@@ -28,7 +28,7 @@ func TestGetOneUserRepository(t *testing.T) {
 		s       UsersRepository
 		msgUUID string
 		mock    func()
-		want    *entity.User
+		want    entity.User
 		wantErr bool
 	}{
 		{
@@ -43,7 +43,7 @@ func TestGetOneUserRepository(t *testing.T) {
 
 				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").WillReturnRows(rows)
 			},
-			want: &entity.User{
+			want: entity.User{
 				Id:       uuid.MustParse("72908c48-b68c-4d67-ae74-d1305f84fc4d"),
 				Email:    "testemail@email.com",
 				Password: "123",
@@ -54,19 +54,30 @@ func TestGetOneUserRepository(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:    "Not Found",
+			s:       app,
+			msgUUID: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
+			mock: func() {
+				rows := sqlmock.NewRows(
+					[]string{"id", "email", "password", "name", "bio", "web", "picture"},
+				)
+				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").WillReturnRows(rows)
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mock()
 			got, err := tt.s.GetOneUserRepository(tt.msgUUID)
 			if (err != nil) != tt.wantErr {
-				t.Fatal(err)
+				t.Errorf("Get() error new = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			if err != nil && !reflect.DeepEqual(got, tt.want) {
-				t.Fatal(err)
-				return
+				t.Errorf("Get() = %v, want %v", got, tt.want)
 			}
 		})
 	}
