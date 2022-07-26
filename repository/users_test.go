@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -121,6 +122,25 @@ func TestCreateUserRepository(t *testing.T) {
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			wantErr: false,
+		},
+		{
+			name:     "Empty Email",
+			s:        app,
+			userUUID: uuid.MustParse("72908c48-b68c-4d67-ae74-d1305f84fc4d"),
+			request: entity.User{
+				Email:    "",
+				Password: "123",
+				Name:     "Jagad",
+				Bio:      func(val string) *string { return &val }("Bio"),
+				Web:      func(val string) *string { return &val }("Web"),
+				Picture:  func(val string) *string { return &val }("Picture"),
+			},
+			mock: func() {
+				mock.ExpectExec("INSERT INTO users").
+					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d", "", "123", "Jagad", "Bio", "Web", "Picture").
+					WillReturnError(errors.New("empty email"))
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
