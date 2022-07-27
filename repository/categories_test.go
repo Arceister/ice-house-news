@@ -185,6 +185,21 @@ func TestCreateAndReturnCategoryRepository(t *testing.T) {
 			},
 			want: uuid.MustParse("d0ff38ec-e438-4adb-9332-4a324d20a872"),
 		},
+		{
+			name: "Invalid Query",
+			app:  app,
+			request: entity.Categories{
+				Id:   uuid.MustParse("d0ff38ec-e438-4adb-9332-4a324d20a872"),
+				Name: "Internal",
+			},
+			mock: func() {
+				mock.ExpectQuery("INSERT INTOOOOOOOO categories").
+					WithArgs("d0ff38ec-e438-4adb-9332-4a324d20a872", "Internal").
+					WillReturnError(errors.New("invalid query"))
+			},
+			want:    uuid.Nil,
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
