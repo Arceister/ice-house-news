@@ -118,6 +118,20 @@ func TestCreateCategoryRepository(t *testing.T) {
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 		},
+		{
+			name: "Empty ID",
+			app:  app,
+			request: entity.Categories{
+				Id:   uuid.Nil,
+				Name: "Howak",
+			},
+			mock: func() {
+				mock.ExpectExec("INSERT INTO categories").
+					WithArgs("", "Howak").
+					WillReturnError(errors.New("user not created"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
