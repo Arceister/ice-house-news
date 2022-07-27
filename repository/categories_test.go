@@ -84,3 +84,50 @@ func TestGetAllNewsCategoryRepository(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateCategoryRepository(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	app := NewCategoriesRepository(
+		lib.DB{
+			DB: db,
+		},
+	)
+
+	tests := []struct {
+		name    string
+		app     CategoriesRepository
+		request entity.Categories
+		mock    func()
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			app:  app,
+			request: entity.Categories{
+				Id:   uuid.MustParse("28596a94-0ea8-4fd3-ad10-89df980decf3"),
+				Name: "Howak",
+			},
+			mock: func() {
+				mock.ExpectExec("INSERT INTO categories").
+					WithArgs("28596a94-0ea8-4fd3-ad10-89df980decf3", "Howak").
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			err := tt.app.CreateCategoryRepository(tt.request)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Get() error new = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+		})
+	}
+}
