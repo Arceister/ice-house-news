@@ -128,6 +128,20 @@ func TestGetUserByEmailRepository(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:      "Not Found",
+			s:         app,
+			userEmail: "testemaik@email.com",
+			mock: func() {
+				sqlmock.NewRows(
+					[]string{"id", "email", "password", "name", "bio", "web", "picture"},
+				).
+					AddRow("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "Jagad", "Bio", "Web", "Picture")
+
+				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("testemaik@email.com").WillReturnError(errors.New("user not found"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
