@@ -1,0 +1,71 @@
+package repository
+
+import (
+	"reflect"
+	"testing"
+
+	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/lib"
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/google/uuid"
+)
+
+func TestGetAllNewsCategoryRepository(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	app := NewCategoriesRepository(
+		lib.DB{
+			DB: db,
+		},
+	)
+
+	tests := []struct {
+		name    string
+		app     CategoriesRepository
+		mock    func()
+		want    []entity.Categories
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			app:  app,
+			mock: func() {
+				rows := sqlmock.NewRows(
+					[]string{"id", "name"},
+				).
+					AddRow("6fae13cb-e8a4-46c4-b412-a0d41662e024", "International").
+					AddRow("28596a94-0ea8-4fd3-ad10-89df980decf3", "Sports")
+
+				mock.ExpectQuery("SELECT (.+) FROM categories").WillReturnRows(rows)
+			},
+			want: []entity.Categories{
+				{
+					Id:   uuid.MustParse("6fae13cb-e8a4-46c4-b412-a0d41662e024"),
+					Name: "International",
+				},
+				{
+					Id:   uuid.MustParse("28596a94-0ea8-4fd3-ad10-89df980decf3"),
+					Name: "Sports",
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := tt.app.GetAllNewsCategoryRepository()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Get() error new = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if err != nil && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
