@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -52,6 +53,20 @@ func TestGetAllNewsCategoryRepository(t *testing.T) {
 					Name: "Sports",
 				},
 			},
+		},
+		{
+			name: "Invalid SQL Query",
+			app:  app,
+			mock: func() {
+				sqlmock.NewRows(
+					[]string{"id", "name"},
+				).
+					AddRow("6fae13cb-e8a4-46c4-b412-a0d41662e024", "International").
+					AddRow("28596a94-0ea8-4fd3-ad10-89df980decf3", "Sports")
+
+				mock.ExpectQuery("SELECT (.+) FROM categories").WillReturnError(errors.New("get all categories error"))
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
