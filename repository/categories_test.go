@@ -256,6 +256,17 @@ func TestGetCategoryByNameRepository(t *testing.T) {
 				Name: "International",
 			},
 		},
+		{
+			name:     "Invalid Query",
+			app:      app,
+			category: "Intern",
+			mock: func() {
+				mock.ExpectQuery("INSERT INTOOOOOOOO categories").
+					WithArgs("Internal").
+					WillReturnError(errors.New("invalid query"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
