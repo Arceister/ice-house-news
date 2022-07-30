@@ -22,7 +22,7 @@ func NewCommentRepository(db lib.DB) CommentRepository {
 func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.Comment, error) {
 	var CommentsList []entity.Comment
 
-	rows, err := r.db.DB.Query(context.Background(),
+	rows, err := r.db.DB.QueryContext(context.Background(),
 		`
 	SELECT nc.id, nc.description,
 				u.id, u.name, u.picture,
@@ -61,7 +61,7 @@ func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.
 }
 
 func (r CommentRepository) InsertCommentRepository(commentDetails entity.CommentInsert) error {
-	commandTag, err := r.db.DB.Exec(context.Background(),
+	commandTag, err := r.db.DB.ExecContext(context.Background(),
 		`
 	INSERT INTO news_comment(id, news_id, users_id, description, created_at) 
 	VALUES ($1, $2, $3, $4, $5)
@@ -72,7 +72,12 @@ func (r CommentRepository) InsertCommentRepository(commentDetails entity.Comment
 		return err
 	}
 
-	if commandTag.RowsAffected() != 1 {
+	rowsAffected, err := commandTag.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected != 1 {
 		return errors.New("user insert failed")
 	}
 
