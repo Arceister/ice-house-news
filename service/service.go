@@ -11,6 +11,7 @@ type IUsersService interface {
 }
 
 type ICategoriesService interface {
+	GetAllNewsCategoryService() ([]entity.Categories, error)
 	CreateCategoryService(string) error
 }
 
@@ -20,4 +21,9 @@ type INewsService interface {
 	InsertNewsService(string, entity.NewsInputRequest) error
 	UpdateNewsService(string, string, entity.NewsInputRequest) error
 	DeleteNewsService(string, string) error
+}
+
+type ICommentsService interface {
+	GetCommentsOnNewsService(newsId string) ([]entity.Comment, error)
+	InsertCommentService(commentRequest entity.CommentInsertRequest, newsId string, userId string) error
 }

@@ -7,6 +7,7 @@ import (
 
 type IUsersRepository interface {
 	GetOneUserRepository(string) (entity.User, error)
+	GetUserByEmailRepository(string) (entity.User, error)
 	CreateUserRepository(uuid.UUID, entity.User) error
 	UpdateUserRepository(string, entity.User) error
 	DeleteUserRepository(string) error
@@ -25,4 +26,9 @@ type INewsRepository interface {
 	AddNewNewsRepository(entity.NewsInsert) error
 	UpdateNewNewsRepository(entity.NewsInsert) error
 	DeleteNewsRepository(string) error
+}
+
+type ICommentRepository interface {
+	GetCommentsOnNewsRepository(string) ([]entity.Comment, error)
+	InsertCommentRepository(entity.CommentInsert) error
 }
