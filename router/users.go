@@ -1,7 +1,7 @@
 package router
 
 import (
-	"github.com/Arceister/ice-house-news/handler"
+	users "github.com/Arceister/ice-house-news/handler/users"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/go-chi/chi/v5"
@@ -10,13 +10,13 @@ import (
 type UsersRoute struct {
 	server        server.Server
 	middlewareJWT middleware.MiddlewareJWT
-	usersHandler  handler.UsersHandler
+	usersHandler  users.UsersHandler
 }
 
 func NewUsersRouter(
 	server server.Server,
 	middlewareJWT middleware.MiddlewareJWT,
-	usersHandler handler.UsersHandler,
+	usersHandler users.UsersHandler,
 ) UsersRoute {
 	return UsersRoute{
 		server:        server,

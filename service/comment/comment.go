@@ -2,18 +2,19 @@ package service
 
 import (
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/repository"
+	comment "github.com/Arceister/ice-house-news/repository/comment"
+	news "github.com/Arceister/ice-house-news/repository/news"
 	"github.com/google/uuid"
 )
 
 type CommentService struct {
-	newsRepository    repository.NewsRepository
-	commentRepository repository.CommentRepository
+	newsRepository    news.NewsRepository
+	commentRepository comment.CommentRepository
 }
 
 func NewCommentService(
-	newsRepository repository.NewsRepository,
-	commentRepository repository.CommentRepository,
+	newsRepository news.NewsRepository,
+	commentRepository comment.CommentRepository,
 ) CommentService {
 	return CommentService{
 		newsRepository:    newsRepository,

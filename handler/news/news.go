@@ -6,16 +6,16 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/server"
-	"github.com/Arceister/ice-house-news/service"
+	news "github.com/Arceister/ice-house-news/service/news"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type NewsHandler struct {
-	service service.NewsService
+	service news.NewsService
 }
 
-func NewNewsHandler(service service.NewsService) NewsHandler {
+func NewNewsHandler(service news.NewsService) NewsHandler {
 	return NewsHandler{
 		service: service,
 	}

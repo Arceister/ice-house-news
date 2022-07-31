@@ -5,20 +5,22 @@ import (
 	"fmt"
 
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/repository"
+	categories "github.com/Arceister/ice-house-news/repository/categories"
+	news "github.com/Arceister/ice-house-news/repository/news"
+	users "github.com/Arceister/ice-house-news/repository/users"
 	"github.com/google/uuid"
 )
 
 type NewsService struct {
-	newsRepository       repository.NewsRepository
-	usersRepository      repository.UsersRepository
-	categoriesRepository repository.CategoriesRepository
+	newsRepository       news.NewsRepository
+	usersRepository      users.UsersRepository
+	categoriesRepository categories.CategoriesRepository
 }
 
 func NewNewsService(
-	newsRepository repository.NewsRepository,
-	usersRepository repository.UsersRepository,
-	categoriesRepository repository.CategoriesRepository,
+	newsRepository news.NewsRepository,
+	usersRepository users.UsersRepository,
+	categoriesRepository categories.CategoriesRepository,
 ) NewsService {
 	return NewsService{
 		newsRepository:       newsRepository,

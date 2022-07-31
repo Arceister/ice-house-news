@@ -6,14 +6,14 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/server"
-	"github.com/Arceister/ice-house-news/service"
+	users "github.com/Arceister/ice-house-news/service/users"
 )
 
 type AuthHandler struct {
-	userService service.UsersService
+	userService users.UsersService
 }
 
-func NewAuthHandler(userService service.UsersService) AuthHandler {
+func NewAuthHandler(userService users.UsersService) AuthHandler {
 	return AuthHandler{
 		userService: userService,
 	}

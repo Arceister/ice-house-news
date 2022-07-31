@@ -4,14 +4,14 @@ import (
 	"net/http"
 
 	"github.com/Arceister/ice-house-news/server"
-	"github.com/Arceister/ice-house-news/service"
+	categories "github.com/Arceister/ice-house-news/service/categories"
 )
 
 type CategoriesHandler struct {
-	service service.CategoriesService
+	service categories.CategoriesService
 }
 
-func NewCategoriesHandler(service service.CategoriesService) CategoriesHandler {
+func NewCategoriesHandler(service categories.CategoriesService) CategoriesHandler {
 	return CategoriesHandler{
 		service: service,
 	}
