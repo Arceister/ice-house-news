@@ -22,15 +22,22 @@ func NewCommentRepository(db lib.DB) CommentRepository {
 func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.Comment, error) {
 	var CommentsList []entity.Comment
 
-	rows, err := r.db.DB.QueryContext(context.Background(),
+	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`
-	SELECT nc.id, nc.description,
-				u.id, u.name, u.picture,
-				nc.created_at
-	FROM news_comment nc
-	JOIN users u on u.id = nc.users_id
-	WHERE nc.news_id = $1
-	`, newsId)
+		SELECT nc.id, nc.description,
+					u.id, u.name, u.picture,
+					nc.created_at
+		FROM news_comment nc
+		JOIN users u on u.id = nc.users_id
+		WHERE nc.news_id = $1
+		`,
+	)
+	if err != nil {
+		return CommentsList, err
+	}
+
+	rows, err := stmt.QueryContext(context.Background(),
+		newsId)
 
 	if err != nil {
 		return nil, err
@@ -61,11 +68,17 @@ func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.
 }
 
 func (r CommentRepository) InsertCommentRepository(commentDetails entity.CommentInsert) error {
-	commandTag, err := r.db.DB.ExecContext(context.Background(),
+	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`
-	INSERT INTO news_comment(id, news_id, users_id, description, created_at) 
-	VALUES ($1, $2, $3, $4, $5)
-	`,
+		INSERT INTO news_comment(id, news_id, users_id, description, created_at) 
+		VALUES ($1, $2, $3, $4, $5)
+		`,
+	)
+	if err != nil {
+		return err
+	}
+
+	commandTag, err := stmt.ExecContext(context.Background(),
 		commentDetails.Id, commentDetails.NewsId, commentDetails.UserId, commentDetails.Description, time.Now())
 
 	if err != nil {

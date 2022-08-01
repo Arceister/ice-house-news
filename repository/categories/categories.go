@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 
 	"github.com/Arceister/ice-house-news/entity"
@@ -21,7 +22,14 @@ func NewCategoriesRepository(db lib.DB) CategoriesRepository {
 func (r CategoriesRepository) GetAllNewsCategoryRepository() ([]entity.Categories, error) {
 	var NewsCategories []entity.Categories
 
-	rows, err := r.db.DB.Query("SELECT id, name FROM categories")
+	stmt, err := r.db.DB.PrepareContext(context.Background(),
+		"SELECT id, name FROM categories",
+	)
+	if err != nil {
+		return NewsCategories, err
+	}
+
+	rows, err := stmt.QueryContext(context.Background())
 
 	if err != nil {
 		return nil, err
@@ -47,7 +55,12 @@ func (r CategoriesRepository) GetAllNewsCategoryRepository() ([]entity.Categorie
 }
 
 func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categories) error {
-	commandTag, err := r.db.DB.Exec("INSERT INTO categories(id, name) VALUES($1, $2)",
+	stmt, err := r.db.DB.PrepareContext(context.Background(), "INSERT INTO categories(id, name) VALUES($1, $2)")
+	if err != nil {
+		return err
+	}
+
+	commandTag, err := stmt.Exec(context.Background(),
 		categoryData.Id,
 		categoryData.Name,
 	)
@@ -71,7 +84,12 @@ func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categ
 func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.Categories) (uuid.UUID, error) {
 	var returnedCategoryId uuid.UUID
 
-	err := r.db.DB.QueryRow("INSERT INTO categories(id, name) VALUES($1, $2) RETURNING id",
+	stmt, err := r.db.DB.PrepareContext(context.Background(), "INSERT INTO categories(id, name) VALUES($1, $2) RETURNING id")
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	err = stmt.QueryRowContext(context.Background(),
 		category.Id,
 		category.Name).Scan(&returnedCategoryId)
 
@@ -85,7 +103,12 @@ func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.
 func (r CategoriesRepository) GetCategoryByNameRepository(categoryName string) (entity.Categories, error) {
 	var CategoryDetails entity.Categories
 
-	err := r.db.DB.QueryRow("SELECT id, name FROM categories WHERE name = $1",
+	stmt, err := r.db.DB.PrepareContext(context.Background(), "SELECT id, name FROM categories WHERE name = $1")
+	if err != nil {
+		return CategoryDetails, err
+	}
+
+	err = stmt.QueryRowContext(context.Background(),
 		categoryName).Scan(
 		&CategoryDetails.Id,
 		&CategoryDetails.Name,

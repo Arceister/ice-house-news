@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"strings"
@@ -25,7 +26,7 @@ func NewNewsRepository(db lib.DB) NewsRepository {
 func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error) {
 	var NewsListOutput []entity.NewsListOutput
 
-	rows, err := r.db.DB.Query(
+	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`
 		SELECT n.id, n.title, n.slug_url, n.cover_image, (
 				SELECT array_agg(image) FROM news_additional_images WHERE news_id = n.id
@@ -36,7 +37,13 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 		FROM news n
 		JOIN categories c ON c.id = n.category_id
 		JOIN news_counter nc on n.id = nc.news_id;
-	`)
+	`,
+	)
+	if err != nil {
+		return NewsListOutput, err
+	}
+
+	rows, err := stmt.QueryContext(context.Background())
 
 	if err != nil {
 		return nil, err
@@ -90,26 +97,36 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 
 	defer tx.Rollback()
 
-	err = tx.QueryRow(
+	stmt, err := tx.PrepareContext(context.Background(),
 		`
-	SELECT n.id, n.title, n.slug_url, n.cover_image, (
-		SELECT array_agg(image) FROM news_additional_images WHERE news_id = n.id
-		) as additional_images, n.nsfw,
-		c.id, c.name,
-		u.id, u.name, u.picture,
-		nc.upvote, nc.downvote, nc.comment, nc.view,
-		n.created_at, n.isi
-	FROM news n
-	JOIN categories c ON c.id = n.category_id
-	JOIN news_counter nc on n.id = nc.news_id
-	JOIN users u on n.users_id = u.id
-	WHERE n.id = $1;
-	`, newsId).Scan(&NewsDetailOutput.Id, &NewsDetailOutput.Title, &NewsDetailOutput.SlugUrl, &NewsDetailOutput.CoverImage,
-		&NewsAdditionalImages, &NewsDetailOutput.Nsfw,
-		&category.Id, &category.Name,
-		&author.Id, &author.Name, &author.Picture,
-		&counter.Upvote, &counter.Downvote, &counter.Comment, &counter.View,
-		&NewsDetailOutput.CreatedAt, &NewsDetailOutput.Content)
+		SELECT n.id, n.title, n.slug_url, n.cover_image, (
+			SELECT array_agg(image) FROM news_additional_images WHERE news_id = n.id
+			) as additional_images, n.nsfw,
+			c.id, c.name,
+			u.id, u.name, u.picture,
+			nc.upvote, nc.downvote, nc.comment, nc.view,
+			n.created_at, n.isi
+		FROM news n
+		JOIN categories c ON c.id = n.category_id
+		JOIN news_counter nc on n.id = nc.news_id
+		JOIN users u on n.users_id = u.id
+		WHERE n.id = $1;
+		`,
+	)
+	if err != nil {
+		tx.Rollback()
+	}
+
+	defer stmt.Close()
+
+	err = stmt.QueryRowContext(
+		context.Background(), newsId).
+		Scan(&NewsDetailOutput.Id, &NewsDetailOutput.Title, &NewsDetailOutput.SlugUrl, &NewsDetailOutput.CoverImage,
+			&NewsAdditionalImages, &NewsDetailOutput.Nsfw,
+			&category.Id, &category.Name,
+			&author.Id, &author.Name, &author.Picture,
+			&counter.Upvote, &counter.Downvote, &counter.Comment, &counter.View,
+			&NewsDetailOutput.CreatedAt, &NewsDetailOutput.Content)
 
 	if len(NewsAdditionalImages.String) != 0 {
 		newsAdditionalImagesExtract := NewsAdditionalImages.String[1 : len(NewsAdditionalImages.String)-1]
@@ -121,12 +138,22 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 		return entity.NewsDetail{}, err
 	}
 
-	commandTag, err := tx.Exec(
+	stmt, err = tx.PrepareContext(
+		context.Background(),
 		`
-	UPDATE news_counter
-	SET view = view + 1
-	WHERE news_id = $1;
-	`, newsId)
+		UPDATE news_counter
+		SET view = view + 1
+		WHERE news_id = $1;
+		`)
+	if err != nil {
+		return entity.NewsDetail{}, err
+	}
+
+	defer stmt.Close()
+
+	commandTag, err := stmt.ExecContext(context.Background(),
+		newsId,
+	)
 
 	if err != nil {
 		return entity.NewsDetail{}, err
@@ -155,12 +182,18 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 
 func (r NewsRepository) GetNewsUserRepository(newsId string) (string, error) {
 	var newsUUID string
+	stmt, err := r.db.DB.PrepareContext(context.Background(),
+		`SELECT users_id FROM news WHERE id = $1`,
+	)
+	if err != nil {
+		return newsUUID, nil
+	}
 
-	err := r.db.DB.QueryRow(
-		`SELECT users_id FROM news WHERE id = $1`, newsId).Scan(&newsUUID)
+	err = stmt.QueryRow(context.Background(),
+		newsId).Scan(&newsUUID)
 
 	if err != nil {
-		return "", err
+		return newsUUID, err
 	}
 
 	return newsUUID, nil
@@ -174,9 +207,16 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 
 	defer tx.Rollback()
 
-	commandTag, err := tx.Exec(
+	stmt, err := tx.PrepareContext(context.Background(),
 		`INSERT INTO news(id, users_id, category_id, title, isi, slug_url, cover_image, nsfw, created_at) 
-	VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+	)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	commandTag, err := stmt.ExecContext(context.Background(),
 		news.Id,
 		news.UserId,
 		news.CategoryId,
@@ -201,8 +241,15 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 	}
 
 	for _, additionalImagesInput := range news.AdditionalImages {
-		commandTag, err := tx.Exec(
-			"INSERT INTO news_additional_images(news_id, image) VALUES ($1, $2)", news.Id, additionalImagesInput)
+		stmt, err := tx.PrepareContext(context.Background(), "INSERT INTO news_additional_images(news_id, image) VALUES ($1, $2)")
+		if err != nil {
+			return err
+		}
+
+		defer stmt.Close()
+
+		commandTag, err := stmt.ExecContext(context.Background(),
+			news.Id, additionalImagesInput)
 
 		if err != nil {
 			return err
@@ -217,9 +264,15 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 			return errors.New("input additional image failed")
 		}
 	}
+	stmt, err = tx.PrepareContext(context.Background(), "INSERT INTO news_counter(news_id) VALUES ($1)")
+	if err != nil {
+		return err
+	}
 
-	commandTag, err = tx.Exec(
-		"INSERT INTO news_counter(news_id) VALUES ($1)", news.Id)
+	defer stmt.Close()
+
+	commandTag, err = stmt.ExecContext(context.Background(),
+		news.Id)
 
 	if err != nil {
 		return err
@@ -243,7 +296,7 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 }
 
 func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
-	commandTag, err := r.db.DB.Exec(
+	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`UPDATE news SET
 		category_id = $1,
 		title = $2,
@@ -253,6 +306,13 @@ func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
 		nsfw = $6
 		WHERE id = $7
 		`,
+	)
+	if err != nil {
+		return err
+	}
+
+	commandTag, err := stmt.ExecContext(
+		context.Background(),
 		news.CategoryId,
 		news.Title,
 		news.Content,
