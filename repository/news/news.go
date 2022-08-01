@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
-	"strings"
 	"time"
 
 	"github.com/Arceister/ice-house-news/entity"
@@ -30,14 +30,16 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`
 		SELECT n.id, n.title, n.slug_url, n.cover_image, (
-				SELECT array_agg(image) FROM news_additional_images WHERE news_id = n.id
-				) as additional_images, n.nsfw, 
-				c.id, c.name, 
-				nc.upvote, nc.downvote, nc.comment, nc.view, 
+				SELECT array_to_json(array_agg(row_to_json(t))) FROM ( SELECT image FROM news_additional_images WHERE news_id = n.id ) t
+				) as additional_images, n.nsfw,
+				c.id, c.name,
+				u.id, u.name, u.picture,
+				nc.upvote, nc.downvote, (SELECT COUNT(*) FROM news_comment WHERE news_id = n.id) as comment, nc.view,
 				n.created_at
 		FROM news n
 		JOIN categories c ON c.id = n.category_id
-		JOIN news_counter nc on n.id = nc.news_id;
+		JOIN news_counter nc on n.id = nc.news_id
+		JOIN users u on n.users_id = u.id
 	`,
 	)
 	if err != nil {
@@ -55,12 +57,14 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 	for rows.Next() {
 		var news entity.NewsListOutput
 		var category entity.NewsCategory
+		var author entity.NewsAuthor
 		var counter entity.NewsCounter
 		var NewsAdditionalImages sql.NullString
 
 		err = rows.Scan(
 			&news.Id, &news.Title, &news.SlugUrl, &news.CoverImage, &NewsAdditionalImages, &news.Nsfw,
 			&category.Id, &category.Name,
+			&author.Id, &author.Name, &author.Picture,
 			&counter.Upvote, &counter.Downvote, &counter.Comment, &counter.View,
 			&news.CreatedAt,
 		)
@@ -69,14 +73,23 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 			return nil, err
 		}
 
-		if len(NewsAdditionalImages.String) != 0 {
-			newsAdditionalImagesExtract := NewsAdditionalImages.String[1 : len(NewsAdditionalImages.String)-1]
-			newsAdditionalImages := strings.Split(newsAdditionalImagesExtract, ",")
-			news.AdditionalImages = newsAdditionalImages
+		var additionalImages []string
+
+		if NewsAdditionalImages.Valid {
+			var imagesJson []map[string]interface{}
+			if err := json.Unmarshal([]byte(NewsAdditionalImages.String), &imagesJson); err != nil {
+				return NewsListOutput, err
+			}
+
+			for _, images := range imagesJson {
+				additionalImages = append(additionalImages, images["image"].(string))
+			}
 		}
 
 		news.Category = category
 		news.Counter = counter
+		news.Author = author
+		news.AdditionalImages = additionalImages
 
 		NewsListOutput = append(NewsListOutput, news)
 	}
@@ -101,12 +114,12 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	stmt, err := tx.PrepareContext(context.Background(),
 		`
 		SELECT n.id, n.title, n.slug_url, n.cover_image, (
-			SELECT array_agg(image) FROM news_additional_images WHERE news_id = n.id
-			) as additional_images, n.nsfw,
-			c.id, c.name,
-			u.id, u.name, u.picture,
-			nc.upvote, nc.downvote, nc.comment, nc.view,
-			n.created_at, n.isi
+				SELECT array_to_json(array_agg(row_to_json(t))) FROM ( SELECT image FROM news_additional_images WHERE news_id = n.id ) t
+				) as additional_images, n.nsfw,
+				c.id, c.name,
+				u.id, u.name, u.picture,
+				nc.upvote, nc.downvote, (SELECT COUNT(*) FROM news_comment WHERE news_id = n.id) as comment, nc.view,
+				n.created_at, n.isi
 		FROM news n
 		JOIN categories c ON c.id = n.category_id
 		JOIN news_counter nc on n.id = nc.news_id
@@ -129,11 +142,20 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 			&counter.Upvote, &counter.Downvote, &counter.Comment, &counter.View,
 			&NewsDetailOutput.CreatedAt, &NewsDetailOutput.Content)
 
-	if len(NewsAdditionalImages.String) != 0 {
-		newsAdditionalImagesExtract := NewsAdditionalImages.String[1 : len(NewsAdditionalImages.String)-1]
-		newsAdditionalImages := strings.Split(newsAdditionalImagesExtract, ",")
-		NewsDetailOutput.AdditionalImages = newsAdditionalImages
+	var additionalImages []string
+
+	if NewsAdditionalImages.Valid {
+		var imagesJson []map[string]interface{}
+		if err := json.Unmarshal([]byte(NewsAdditionalImages.String), &imagesJson); err != nil {
+			return NewsDetailOutput, err
+		}
+
+		for _, images := range imagesJson {
+			additionalImages = append(additionalImages, images["image"].(string))
+		}
 	}
+
+	NewsDetailOutput.AdditionalImages = additionalImages
 
 	if err != nil {
 		return entity.NewsDetail{}, err

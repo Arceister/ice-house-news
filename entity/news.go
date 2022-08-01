@@ -15,6 +15,7 @@ type NewsListOutput struct {
 	CreatedAt        time.Time    `json:"created_at"`
 	Nsfw             bool         `json:"nsfw"`
 	Category         NewsCategory `json:"category"`
+	Author           NewsAuthor   `json:"author"`
 	Counter          NewsCounter  `json:"counter"`
 }
 
