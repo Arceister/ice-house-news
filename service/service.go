@@ -4,7 +4,7 @@ import "github.com/Arceister/ice-house-news/entity"
 
 type IUsersService interface {
 	GetOneUserService(string) (entity.User, error)
-	SignInService(entity.UserSignInRequest) (*string, error)
+	SignInService(entity.UserSignInRequest) (entity.UserAuthenticationReturn, error)
 	CreateUserService(entity.User) error
 	UpdateUserService(string, entity.User) error
 	DeleteUserService(string) error

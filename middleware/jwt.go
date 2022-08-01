@@ -55,20 +55,22 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (m MiddlewareJWT) GenerateNewToken(user entity.User) (*string, error) {
+func (m MiddlewareJWT) GenerateNewToken(user entity.User) (*string, time.Time, error) {
+	timeExpire := time.Now().AddDate(0, 0, 7)
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    user.Id,
 		"email": user.Email,
-		"exp":   time.Now().AddDate(0, 0, 7).Unix(),
+		"exp":   timeExpire.Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(m.appConfig.SecretKey))
 
 	if err != nil {
-		return nil, err
+		return nil, time.Time{}, err
 	}
 
-	return &tokenString, nil
+	return &tokenString, timeExpire, nil
 }
 
 func (m MiddlewareJWT) ExtractClaims(tokenString string) (jwt.MapClaims, error) {

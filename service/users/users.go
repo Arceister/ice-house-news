@@ -37,34 +37,40 @@ func (s UsersService) GetOneUserService(id string) (entity.User, error) {
 	return userData, nil
 }
 
-func (s UsersService) SignInService(userInput entity.UserSignInRequest) (*string, error) {
+func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, error) {
+	var signInSchema entity.UserAuthenticationReturn
+
 	validate := validator.New()
 	err := validate.Struct(userInput)
 	if err != nil {
-		return nil, errors.New("please input email/password")
+		return signInSchema, errors.New("please input email/password")
 	}
 
 	userData, err := s.repository.GetUserByEmailRepository(userInput.Email)
 
 	if err != nil && err.Error() == "sql: no rows in result set" {
-		return nil, errors.New("user not found")
+		return signInSchema, errors.New("user not found")
 	} else if err != nil {
-		return nil, err
+		return signInSchema, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(userInput.Password))
 
 	if err != nil {
-		return nil, errors.New("wrong password")
+		return signInSchema, errors.New("wrong password")
 	}
 
-	token, err := s.middleware.GenerateNewToken(userData)
+	token, expire, err := s.middleware.GenerateNewToken(userData)
 
 	if err != nil {
-		return nil, err
+		return signInSchema, err
 	}
 
-	return token, nil
+	signInSchema.Token = *token
+	signInSchema.Scheme = "Bearer"
+	signInSchema.ExpiresAt = expire
+
+	return signInSchema, nil
 }
 
 func (s UsersService) CreateUserService(userData entity.User) error {

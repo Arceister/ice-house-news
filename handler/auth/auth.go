@@ -24,7 +24,7 @@ func (c AuthHandler) UserSignInHandler(w http.ResponseWriter, r *http.Request) {
 	var userInput entity.UserSignInRequest
 	json.NewDecoder(r.Body).Decode(&userInput)
 
-	token, err := c.userService.SignInService(userInput)
+	signInSchema, err := c.userService.SignInService(userInput)
 	if err != nil && (err.Error() == "user not found" || err.Error() == "wrong password") {
 		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
 		return
@@ -33,8 +33,5 @@ func (c AuthHandler) UserSignInHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var userToken entity.UserToken
-	userToken.Token = *token
-
-	server.ResponseJSONData(w, http.StatusOK, true, "Login successful!", userToken)
+	server.ResponseJSONData(w, http.StatusOK, true, "Login successful!", signInSchema)
 }
