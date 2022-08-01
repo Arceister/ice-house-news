@@ -9,6 +9,7 @@ import (
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type UsersHandler struct {
@@ -19,6 +20,22 @@ func NewUsersHandler(service service.IUsersService) handler.IUsersHandler {
 	return UsersHandler{
 		service: service,
 	}
+}
+
+func (c UsersHandler) GetOwnProfile(w http.ResponseWriter, r *http.Request) {
+	currentUserId := r.Context().Value("JWTProps").(jwt.MapClaims)["id"].(string)
+	result, err := c.service.GetOneUserService(currentUserId)
+
+	if err != nil && err.Error() == "sql: no rows in result set" {
+		server.ResponseJSON(w, http.StatusNotFound, false, "user not found")
+		return
+	}
+	if err != nil {
+		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		return
+	}
+
+	server.ResponseJSONData(w, http.StatusOK, true, "get profile", result)
 }
 
 func (c UsersHandler) GetOneUserHandler(w http.ResponseWriter, r *http.Request) {

@@ -3,6 +3,7 @@ package handler
 import "net/http"
 
 type IUsersHandler interface {
+	GetOwnProfile(w http.ResponseWriter, r *http.Request)
 	GetOneUserHandler(w http.ResponseWriter, r *http.Request)
 	CreateUserHandler(w http.ResponseWriter, r *http.Request)
 	UpdateUserHandler(w http.ResponseWriter, r *http.Request)
