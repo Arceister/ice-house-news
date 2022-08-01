@@ -6,10 +6,11 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/handler"
-	"github.com/Arceister/ice-house-news/server"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
+
+	response "github.com/Arceister/ice-house-news/server/response"
 )
 
 type CommentHandler struct {
@@ -27,16 +28,11 @@ func (h CommentHandler) GetCommentsOnNewsHandler(w http.ResponseWriter, r *http.
 	newsComments, err := h.service.GetCommentsOnNewsService(newsId)
 
 	if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	if newsComments == nil {
-		server.ResponseJSON(w, http.StatusOK, true, "no comment in this news")
-		return
-	}
-
-	server.ResponseJSONData(w, http.StatusOK, true, "comments get", newsComments)
+	response.SuccessResponseWithData(w, http.StatusOK, "comments get", newsComments)
 }
 
 func (h CommentHandler) InsertCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -48,13 +44,10 @@ func (h CommentHandler) InsertCommentHandler(w http.ResponseWriter, r *http.Requ
 	json.NewDecoder(r.Body).Decode(&commentInputRequest)
 
 	err := h.service.InsertCommentService(commentInputRequest, newsId, userId)
-	if err != nil && err.Error() == "comment insert failed" {
-		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
-		return
-	} else if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+	if err != nil {
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSON(w, http.StatusOK, true, "insert comment success")
+	response.SuccessResponse(w, http.StatusOK, "insert comment success")
 }

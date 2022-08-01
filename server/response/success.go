@@ -3,9 +3,10 @@ package server
 import "net/http"
 
 type SuccessMessage struct {
-	MessageStruct
-	StatusCode int    `json:"-"`
-	Message    string `json:"message"`
+	Success    bool        `json:"success"`
+	StatusCode int         `json:"-"`
+	Message    string      `json:"message"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
 func SuccessResponse(

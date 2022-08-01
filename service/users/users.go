@@ -1,12 +1,13 @@
 package service
 
 import (
-	"errors"
+	"database/sql"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/repository"
 	"github.com/Arceister/ice-house-news/service"
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -27,43 +28,43 @@ func NewUsersService(
 	}
 }
 
-func (s UsersService) GetOneUserService(id string) (entity.User, error) {
-	userData, err := s.repository.GetOneUserRepository(id)
+func (s UsersService) GetOneUserService(id string) (entity.User, errorUtils.IErrorMessage) {
+	userData, errorMessage := s.repository.GetOneUserRepository(id)
 
-	if err != nil {
-		return entity.User{}, err
+	if errorMessage != nil {
+		return entity.User{}, errorMessage
 	}
 
 	return userData, nil
 }
 
-func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, error) {
+func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
 	var signInSchema entity.UserAuthenticationReturn
 
 	validate := validator.New()
 	err := validate.Struct(userInput)
 	if err != nil {
-		return signInSchema, errors.New("please input email/password")
+		return signInSchema, errorUtils.NewUnprocessableEntityError("please input email/password")
 	}
 
-	userData, err := s.repository.GetUserByEmailRepository(userInput.Email)
+	userData, errorMessage := s.repository.GetUserByEmailRepository(userInput.Email)
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		return signInSchema, errors.New("user not found")
+	if errorMessage != nil && errorMessage.Message() == sql.ErrNoRows.Error() {
+		return signInSchema, errorUtils.NewNotFoundError("username/password not found")
 	} else if err != nil {
-		return signInSchema, err
+		return signInSchema, errorMessage
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(userData.Password), []byte(userInput.Password))
 
 	if err != nil {
-		return signInSchema, errors.New("wrong password")
+		return signInSchema, errorUtils.NewUnauthorizedError("wrong password")
 	}
 
 	token, expire, err := s.middleware.GenerateNewToken(userData)
 
 	if err != nil {
-		return signInSchema, err
+		return signInSchema, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	signInSchema.Token = *token
@@ -73,45 +74,45 @@ func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.
 	return signInSchema, nil
 }
 
-func (s UsersService) CreateUserService(userData entity.User) error {
+func (s UsersService) CreateUserService(userData entity.User) errorUtils.IErrorMessage {
 	uniqueUserId := uuid.Must(uuid.NewRandom())
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	userData.Password = string(hashedPassword)
 
-	err = s.repository.CreateUserRepository(uniqueUserId, userData)
+	errorMessage := s.repository.CreateUserRepository(uniqueUserId, userData)
 
-	if err != nil {
-		return err
+	if errorMessage != nil {
+		return errorMessage
 	}
 
 	return nil
 }
 
-func (s UsersService) UpdateUserService(id string, userData entity.User) error {
+func (s UsersService) UpdateUserService(id string, userData entity.User) errorUtils.IErrorMessage {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	userData.Password = string(hashedPassword)
 
-	err = s.repository.UpdateUserRepository(id, userData)
-	if err != nil {
-		return err
+	errorMessage := s.repository.UpdateUserRepository(id, userData)
+	if errorMessage != nil {
+		return errorMessage
 	}
 
 	return nil
 }
 
-func (s UsersService) DeleteUserService(id string) error {
-	err := s.repository.DeleteUserRepository(id)
-	if err != nil {
-		return err
+func (s UsersService) DeleteUserService(id string) errorUtils.IErrorMessage {
+	errorMessage := s.repository.DeleteUserRepository(id)
+	if errorMessage != nil {
+		return errorMessage
 	}
 
 	return nil

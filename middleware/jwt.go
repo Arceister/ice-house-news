@@ -8,8 +8,10 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
-	"github.com/Arceister/ice-house-news/server"
+	utils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/golang-jwt/jwt/v4"
+
+	response "github.com/Arceister/ice-house-news/server/response"
 )
 
 type MiddlewareJWT struct {
@@ -26,7 +28,7 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(authHeader) != 2 {
-			server.ResponseJSON(w, http.StatusUnauthorized, false, "Malformed token")
+			response.ErrorResponse(w, utils.NewUnauthorizedError("Malformed token"))
 			return
 		} else {
 			jwtToken := authHeader[1]
@@ -39,16 +41,16 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 				next.ServeHTTP(w, r.WithContext(ctx))
 			} else if verification, ok := err.(*jwt.ValidationError); ok {
 				if verification.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-					server.ResponseJSON(w, http.StatusUnauthorized, false, "Token expired")
+					response.ErrorResponse(w, utils.NewUnauthorizedError("Token expired"))
 					return
 				}
 			} else {
-				server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
+				response.ErrorResponse(w, utils.NewUnauthorizedError(err.Error()))
 				return
 			}
 
 			if !token.Valid {
-				server.ResponseJSON(w, http.StatusInternalServerError, false, "Token invalid")
+				response.ErrorResponse(w, utils.NewUnauthorizedError("Token invalid"))
 				return
 			}
 		}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/handler"
-	"github.com/Arceister/ice-house-news/server"
+	response "github.com/Arceister/ice-house-news/server/response"
 	"github.com/Arceister/ice-house-news/service"
 )
 
@@ -25,13 +25,10 @@ func (c AuthHandler) UserSignInHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&userInput)
 
 	signInSchema, err := c.userService.SignInService(userInput)
-	if err != nil && (err.Error() == "user not found" || err.Error() == "wrong password") {
-		server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
-		return
-	} else if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+	if err != nil {
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSONData(w, http.StatusOK, true, "Login successful!", signInSchema)
+	response.SuccessResponseWithData(w, 200, "Login successful", signInSchema)
 }

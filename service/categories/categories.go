@@ -5,6 +5,8 @@ import (
 	"github.com/Arceister/ice-house-news/repository"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/google/uuid"
+
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 type CategoriesService struct {
@@ -17,7 +19,7 @@ func NewCategoriesService(repository repository.ICategoriesRepository) service.I
 	}
 }
 
-func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, error) {
+func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, errorUtils.IErrorMessage) {
 	categories, err := s.repository.GetAllNewsCategoryRepository()
 	if err != nil {
 		return nil, err
@@ -26,7 +28,7 @@ func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, err
 	return categories, nil
 }
 
-func (s CategoriesService) CreateCategoryService(categoryName string) error {
+func (s CategoriesService) CreateCategoryService(categoryName string) errorUtils.IErrorMessage {
 	var categoriesData entity.Categories
 
 	newUuid := uuid.Must(uuid.NewRandom())

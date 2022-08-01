@@ -7,9 +7,10 @@ import (
 )
 
 type ErrorMessage struct {
-	MessageStruct
-	StatusCode   int    `json:"-"`
-	ErrorMessage string `json:"message"`
+	Success      bool        `json:"success"`
+	StatusCode   int         `json:"-"`
+	ErrorMessage string      `json:"message"`
+	Data         interface{} `json:"data,omitempty"`
 }
 
 func ErrorResponse(

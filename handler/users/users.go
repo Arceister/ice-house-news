@@ -6,7 +6,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/handler"
-	"github.com/Arceister/ice-house-news/server"
+	response "github.com/Arceister/ice-house-news/server/response"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
@@ -26,32 +26,24 @@ func (c UsersHandler) GetOwnProfile(w http.ResponseWriter, r *http.Request) {
 	currentUserId := r.Context().Value("JWTProps").(jwt.MapClaims)["id"].(string)
 	result, err := c.service.GetOneUserService(currentUserId)
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		server.ResponseJSON(w, http.StatusNotFound, false, "user not found")
-		return
-	}
 	if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSONData(w, http.StatusOK, true, "get profile", result)
+	response.SuccessResponseWithData(w, 200, "get profile", result)
 }
 
 func (c UsersHandler) GetOneUserHandler(w http.ResponseWriter, r *http.Request) {
 	userUniqueId := chi.URLParam(r, "uuid")
 	result, err := c.service.GetOneUserService(userUniqueId)
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		server.ResponseJSON(w, http.StatusNotFound, false, "user not found")
-		return
-	}
 	if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSONData(w, http.StatusOK, true, "get one user", result)
+	response.SuccessResponseWithData(w, 200, "get one user", result)
 }
 
 func (c UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,16 +52,12 @@ func (c UsersHandler) CreateUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	err := c.service.CreateUserService(userData)
 
-	if err != nil && err.Error() == "user not created" {
-		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
-		return
-	}
 	if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSON(w, http.StatusOK, true, "User create success")
+	response.SuccessResponse(w, 200, "create user success")
 }
 
 func (c UsersHandler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,20 +68,12 @@ func (c UsersHandler) UpdateUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	err := c.service.UpdateUserService(userUniqueId, userData)
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
-		return
-	}
-	if err != nil && err.Error() == "user not updated" {
-		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
-		return
-	}
 	if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSON(w, http.StatusOK, true, "User update success")
+	response.SuccessResponse(w, 200, "update user success")
 }
 
 func (c UsersHandler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -101,18 +81,10 @@ func (c UsersHandler) DeleteUserHandler(w http.ResponseWriter, r *http.Request) 
 
 	err := c.service.DeleteUserService(userUniqueId)
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
-		server.ResponseJSON(w, http.StatusNotFound, false, "news not found")
-		return
-	}
-	if err != nil && err.Error() == "user not deleted" {
-		server.ResponseJSON(w, http.StatusUnprocessableEntity, false, err.Error())
-		return
-	}
 	if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSON(w, http.StatusOK, true, "User deleted")
+	response.SuccessResponse(w, 200, "delete user success")
 }

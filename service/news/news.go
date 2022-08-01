@@ -1,13 +1,15 @@
 package service
 
 import (
-	"errors"
+	"database/sql"
 	"fmt"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/repository"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/google/uuid"
+
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 type NewsService struct {
@@ -28,11 +30,11 @@ func NewNewsService(
 	}
 }
 
-func (s NewsService) GetNewsListService() ([]entity.NewsListOutput, error) {
+func (s NewsService) GetNewsListService() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
 	return s.newsRepository.GetNewsListRepository()
 }
 
-func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, error) {
+func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
 	newsDetail, err := s.newsRepository.GetNewsDetailRepository(newsId)
 
 	if err != nil {
@@ -42,7 +44,7 @@ func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, err
 	return newsDetail, nil
 }
 
-func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsInputRequest) error {
+func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsInputRequest) errorUtils.IErrorMessage {
 	var newsInsertData entity.NewsInsert
 
 	newsInsertData.NewsInputRequest = newsInputData
@@ -50,9 +52,9 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 	newsUUID := uuid.Must(uuid.NewRandom())
 	parsedUserUUID := uuid.Must(uuid.Parse(userId))
 
-	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
+	categoryDetail, errorMessage := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
+	if errorMessage != nil && errorMessage.Message() == sql.ErrNoRows.Error() {
 		newCategoryUUID := uuid.Must(uuid.NewRandom())
 
 		newCategoryData := entity.Categories{}
@@ -68,17 +70,17 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 		categoryDetail.Id = newCategoryId
 	}
 
-	if err != nil && err.Error() != "sql: no rows in result set" {
-		return err
+	if errorMessage != nil && errorMessage.Message() != sql.ErrNoRows.Error() {
+		return errorMessage
 	}
 
 	newsInsertData.Id = newsUUID
 	newsInsertData.UserId = parsedUserUUID
 	newsInsertData.CategoryId = categoryDetail.Id
 
-	err = s.newsRepository.AddNewNewsRepository(newsInsertData)
-	if err != nil {
-		return err
+	errorMessage = s.newsRepository.AddNewNewsRepository(newsInsertData)
+	if errorMessage != nil {
+		return errorMessage
 	}
 
 	return nil
@@ -88,7 +90,7 @@ func (s NewsService) UpdateNewsService(
 	userId string,
 	newsId string,
 	newsInputData entity.NewsInputRequest,
-) error {
+) errorUtils.IErrorMessage {
 	var newsUpdateData entity.NewsInsert
 
 	newsAuthorUUID, err := s.newsRepository.GetNewsUserRepository(newsId)
@@ -99,12 +101,12 @@ func (s NewsService) UpdateNewsService(
 	fmt.Println(userId)
 
 	if newsAuthorUUID != userId {
-		return errors.New("user not authenticated")
+		return errorUtils.NewUnauthorizedError("user not authenticated")
 	}
 
 	categoryDetail, err := s.categoriesRepository.GetCategoryByNameRepository(newsInputData.Category)
 
-	if err != nil && err.Error() == "sql: no rows in result set" {
+	if err != nil && err.Message() == sql.ErrNoRows.Error() {
 		newCategoryUUID := uuid.Must(uuid.NewRandom())
 
 		newCategoryData := entity.Categories{}
@@ -120,7 +122,7 @@ func (s NewsService) UpdateNewsService(
 		categoryDetail.Id = newCategoryId
 	}
 
-	if err != nil && err.Error() != "sql: no rows in result set" {
+	if err != nil && err.Message() != sql.ErrNoRows.Error() {
 		return err
 	}
 
@@ -139,14 +141,14 @@ func (s NewsService) UpdateNewsService(
 func (s NewsService) DeleteNewsService(
 	userId string,
 	newsId string,
-) error {
+) errorUtils.IErrorMessage {
 	newsAuthorUUID, err := s.newsRepository.GetNewsUserRepository(newsId)
 	if err != nil {
 		return err
 	}
 
 	if newsAuthorUUID != userId {
-		return errors.New("user not authenticated")
+		return errorUtils.NewUnauthorizedError("user not authenticated")
 	}
 
 	err = s.newsRepository.DeleteNewsRepository(newsId)

@@ -4,14 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
+	"strings"
 	"time"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/Arceister/ice-house-news/repository"
 
-	_ "github.com/jackc/pgx/v4/stdlib"
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 type NewsRepository struct {
@@ -24,7 +24,7 @@ func NewNewsRepository(db lib.DB) repository.INewsRepository {
 	}
 }
 
-func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error) {
+func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
 	var NewsListOutput []entity.NewsListOutput
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
@@ -43,13 +43,13 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 	`,
 	)
 	if err != nil {
-		return NewsListOutput, err
+		return NewsListOutput, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rows, err := stmt.QueryContext(context.Background())
 
 	if err != nil {
-		return nil, err
+		return nil, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	defer rows.Close()
@@ -70,7 +70,7 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, errorUtils.NewInternalServerError(err.Error())
 		}
 
 		var additionalImages []string
@@ -78,7 +78,7 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 		if NewsAdditionalImages.Valid {
 			var imagesJson []map[string]interface{}
 			if err := json.Unmarshal([]byte(NewsAdditionalImages.String), &imagesJson); err != nil {
-				return NewsListOutput, err
+				return NewsListOutput, errorUtils.NewInternalServerError(err.Error())
 			}
 
 			for _, images := range imagesJson {
@@ -97,7 +97,7 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, error)
 	return NewsListOutput, nil
 }
 
-func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetail, error) {
+func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
 	var NewsDetailOutput entity.NewsDetail
 	var category entity.NewsCategory
 	var counter entity.NewsCounter
@@ -106,7 +106,7 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 
 	tx, err := r.db.DB.Begin()
 	if err != nil {
-		return entity.NewsDetail{}, err
+		return entity.NewsDetail{}, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	defer tx.Rollback()
@@ -142,12 +142,19 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 			&counter.Upvote, &counter.Downvote, &counter.Comment, &counter.View,
 			&NewsDetailOutput.CreatedAt, &NewsDetailOutput.Content)
 
+	if err != nil {
+		if err.Error() == sql.ErrNoRows.Error() || strings.Contains(err.Error(), "invalid input syntax for type uuid") {
+			return NewsDetailOutput, errorUtils.NewNotFoundError("news not found")
+		}
+		return NewsDetailOutput, errorUtils.NewInternalServerError(err.Error())
+	}
+
 	var additionalImages []string
 
 	if NewsAdditionalImages.Valid {
 		var imagesJson []map[string]interface{}
 		if err := json.Unmarshal([]byte(NewsAdditionalImages.String), &imagesJson); err != nil {
-			return NewsDetailOutput, err
+			return NewsDetailOutput, errorUtils.NewInternalServerError(err.Error())
 		}
 
 		for _, images := range imagesJson {
@@ -158,7 +165,7 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	NewsDetailOutput.AdditionalImages = additionalImages
 
 	if err != nil {
-		return entity.NewsDetail{}, err
+		return entity.NewsDetail{}, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	stmt, err = tx.PrepareContext(
@@ -169,7 +176,7 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 		WHERE news_id = $1;
 		`)
 	if err != nil {
-		return entity.NewsDetail{}, err
+		return entity.NewsDetail{}, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -179,21 +186,21 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	)
 
 	if err != nil {
-		return entity.NewsDetail{}, err
+		return entity.NewsDetail{}, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rows, err := commandTag.RowsAffected()
 	if err != nil {
-		return entity.NewsDetail{}, err
+		return entity.NewsDetail{}, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	if rows != 1 {
-		return entity.NewsDetail{}, errors.New("view not updated")
+		return entity.NewsDetail{}, errorUtils.NewUnprocessableEntityError("view not updated")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return entity.NewsDetail{}, err
+		return entity.NewsDetail{}, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	NewsDetailOutput.Author = author
@@ -203,29 +210,29 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	return NewsDetailOutput, nil
 }
 
-func (r NewsRepository) GetNewsUserRepository(newsId string) (string, error) {
+func (r NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtils.IErrorMessage) {
 	var newsUUID string
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`SELECT users_id FROM news WHERE id = $1`,
 	)
 	if err != nil {
-		return newsUUID, nil
+		return newsUUID, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	err = stmt.QueryRow(context.Background(),
 		newsId).Scan(&newsUUID)
 
 	if err != nil {
-		return newsUUID, err
+		return newsUUID, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	return newsUUID, nil
 }
 
-func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
+func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
 	tx, err := r.db.DB.Begin()
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	defer tx.Rollback()
@@ -235,7 +242,7 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 		VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
 	)
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 	defer stmt.Close()
 
@@ -251,22 +258,22 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 		time.Now())
 
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rows, err := commandTag.RowsAffected()
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	if rows != 1 {
-		return errors.New("news not created")
+		return errorUtils.NewUnprocessableEntityError("news not created")
 	}
 
 	for _, additionalImagesInput := range news.AdditionalImages {
 		stmt, err := tx.PrepareContext(context.Background(), "INSERT INTO news_additional_images(news_id, image) VALUES ($1, $2)")
 		if err != nil {
-			return err
+			return errorUtils.NewInternalServerError(err.Error())
 		}
 
 		defer stmt.Close()
@@ -275,21 +282,21 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 			news.Id, additionalImagesInput)
 
 		if err != nil {
-			return err
+			return errorUtils.NewInternalServerError(err.Error())
 		}
 
 		rows, err := commandTag.RowsAffected()
 		if err != nil {
-			return err
+			return errorUtils.NewInternalServerError(err.Error())
 		}
 
 		if rows != 1 {
-			return errors.New("input additional image failed")
+			return errorUtils.NewUnprocessableEntityError("input additional image failed")
 		}
 	}
 	stmt, err = tx.PrepareContext(context.Background(), "INSERT INTO news_counter(news_id) VALUES ($1)")
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	defer stmt.Close()
@@ -298,27 +305,27 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) error {
 		news.Id)
 
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rowsAffected, err := commandTag.RowsAffected()
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	if rowsAffected != 1 {
-		return errors.New("input news counter failed")
+		return errorUtils.NewUnprocessableEntityError("input news counter failed")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	return nil
 }
 
-func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
+func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`UPDATE news SET
 		category_id = $1,
@@ -331,7 +338,7 @@ func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
 		`,
 	)
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	commandTag, err := stmt.ExecContext(
@@ -345,36 +352,36 @@ func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) error {
 		news.Id)
 
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rows, err := commandTag.RowsAffected()
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	if rows != 1 {
-		return errors.New("news not updated")
+		return errorUtils.NewUnprocessableEntityError("news not updated")
 	}
 
-	return err
+	return nil
 }
 
-func (r NewsRepository) DeleteNewsRepository(newsId string) error {
+func (r NewsRepository) DeleteNewsRepository(newsId string) errorUtils.IErrorMessage {
 	commandTag, err := r.db.DB.Exec(
 		"DELETE FROM news WHERE id = $1", newsId)
 
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rows, err := commandTag.RowsAffected()
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	if rows != 1 {
-		return errors.New("news not deleted")
+		return errorUtils.NewUnprocessableEntityError("news not deleted")
 	}
 
 	return nil

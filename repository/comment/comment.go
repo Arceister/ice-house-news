@@ -2,12 +2,12 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/Arceister/ice-house-news/repository"
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 type CommentRepository struct {
@@ -20,7 +20,7 @@ func NewCommentRepository(db lib.DB) repository.ICommentRepository {
 	}
 }
 
-func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.Comment, error) {
+func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.Comment, errorUtils.IErrorMessage) {
 	var CommentsList []entity.Comment
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
@@ -34,14 +34,14 @@ func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.
 		`,
 	)
 	if err != nil {
-		return CommentsList, err
+		return CommentsList, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rows, err := stmt.QueryContext(context.Background(),
 		newsId)
 
 	if err != nil {
-		return nil, err
+		return nil, errorUtils.NewInternalServerError(err.Error())
 	}
 
 	defer rows.Close()
@@ -57,7 +57,7 @@ func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, errorUtils.NewInternalServerError(err.Error())
 		}
 
 		comment.User = commentator
@@ -68,7 +68,7 @@ func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.
 	return CommentsList, nil
 }
 
-func (r CommentRepository) InsertCommentRepository(commentDetails entity.CommentInsert) error {
+func (r CommentRepository) InsertCommentRepository(commentDetails entity.CommentInsert) errorUtils.IErrorMessage {
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`
 		INSERT INTO news_comment(id, news_id, users_id, description, created_at) 
@@ -76,23 +76,23 @@ func (r CommentRepository) InsertCommentRepository(commentDetails entity.Comment
 		`,
 	)
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	commandTag, err := stmt.ExecContext(context.Background(),
 		commentDetails.Id, commentDetails.NewsId, commentDetails.UserId, commentDetails.Description, time.Now())
 
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	rowsAffected, err := commandTag.RowsAffected()
 	if err != nil {
-		return err
+		return errorUtils.NewInternalServerError(err.Error())
 	}
 
 	if rowsAffected != 1 {
-		return errors.New("user insert failed")
+		return errorUtils.NewUnprocessableEntityError("user insert failed")
 	}
 
 	return nil
