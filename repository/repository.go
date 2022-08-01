@@ -14,17 +14,18 @@ type IUsersRepository interface {
 }
 
 type ICategoriesRepository interface {
-	CreateCategoryRepository(entity.Categories) error
-	CreateAndReturnCategoryRepository(entity.Categories) (*uuid.UUID, error)
+	GetAllNewsCategoryRepository() ([]entity.Categories, error)
+	CreateCategoryRepository(categoryData entity.Categories) error
+	CreateAndReturnCategoryRepository(entity.Categories) (uuid.UUID, error)
 	GetCategoryByNameRepository(string) (entity.Categories, error)
 }
 
 type INewsRepository interface {
 	GetNewsListRepository() ([]entity.NewsListOutput, error)
 	GetNewsDetailRepository(string) (entity.NewsDetail, error)
-	GetNewsUserRepository(string) (*string, error)
+	GetNewsUserRepository(string) (string, error)
 	AddNewNewsRepository(entity.NewsInsert) error
-	UpdateNewNewsRepository(entity.NewsInsert) error
+	UpdateNewsRepository(entity.NewsInsert) error
 	DeleteNewsRepository(string) error
 }
 

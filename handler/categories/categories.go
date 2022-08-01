@@ -3,15 +3,16 @@ package handler
 import (
 	"net/http"
 
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/server"
-	categories "github.com/Arceister/ice-house-news/service/categories"
+	"github.com/Arceister/ice-house-news/service"
 )
 
 type CategoriesHandler struct {
-	service categories.CategoriesService
+	service service.ICategoriesService
 }
 
-func NewCategoriesHandler(service categories.CategoriesService) CategoriesHandler {
+func NewCategoriesHandler(service service.ICategoriesService) handler.ICategoriesHandler {
 	return CategoriesHandler{
 		service: service,
 	}

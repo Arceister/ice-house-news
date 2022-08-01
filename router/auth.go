@@ -1,19 +1,19 @@
 package router
 
 import (
-	auth "github.com/Arceister/ice-house-news/handler/auth"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/go-chi/chi/v5"
 )
 
 type AuthRoute struct {
 	server      server.Server
-	authHandler auth.AuthHandler
+	authHandler handler.IAuthHandler
 }
 
 func NewAuthRouter(
 	server server.Server,
-	authHandler auth.AuthHandler,
+	authHandler handler.IAuthHandler,
 ) AuthRoute {
 	return AuthRoute{
 		server:      server,

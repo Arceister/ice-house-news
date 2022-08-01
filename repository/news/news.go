@@ -9,6 +9,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
+	"github.com/Arceister/ice-house-news/repository"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
@@ -17,7 +18,7 @@ type NewsRepository struct {
 	db lib.DB
 }
 
-func NewNewsRepository(db lib.DB) NewsRepository {
+func NewNewsRepository(db lib.DB) repository.INewsRepository {
 	return NewsRepository{
 		db: db,
 	}

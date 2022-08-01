@@ -24,3 +24,8 @@ type INewsHandler interface {
 	UpdateNewsHandler(w http.ResponseWriter, r *http.Request)
 	DeleteNewsHandler(w http.ResponseWriter, r *http.Request)
 }
+
+type ICommentHandler interface {
+	GetCommentsOnNewsHandler(w http.ResponseWriter, r *http.Request)
+	InsertCommentHandler(w http.ResponseWriter, r *http.Request)
+}

@@ -23,7 +23,7 @@ type INewsService interface {
 	DeleteNewsService(string, string) error
 }
 
-type ICommentsService interface {
+type ICommentService interface {
 	GetCommentsOnNewsService(newsId string) ([]entity.Comment, error)
 	InsertCommentService(commentRequest entity.CommentInsertRequest, newsId string, userId string) error
 }

@@ -7,13 +7,14 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
+	"github.com/Arceister/ice-house-news/repository"
 )
 
 type CommentRepository struct {
 	db lib.DB
 }
 
-func NewCommentRepository(db lib.DB) CommentRepository {
+func NewCommentRepository(db lib.DB) repository.ICommentRepository {
 	return CommentRepository{
 		db: db,
 	}

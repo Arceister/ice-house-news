@@ -5,17 +5,18 @@ import (
 	"net/http"
 
 	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/server"
-	comment "github.com/Arceister/ice-house-news/service/comment"
+	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type CommentHandler struct {
-	service comment.CommentService
+	service service.ICommentService
 }
 
-func NewCommentHandler(service comment.CommentService) CommentHandler {
+func NewCommentHandler(service service.ICommentService) handler.ICommentHandler {
 	return CommentHandler{
 		service: service,
 	}

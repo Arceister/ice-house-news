@@ -5,17 +5,18 @@ import (
 	"net/http"
 
 	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/server"
-	news "github.com/Arceister/ice-house-news/service/news"
+	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 type NewsHandler struct {
-	service news.NewsService
+	service service.INewsService
 }
 
-func NewNewsHandler(service news.NewsService) NewsHandler {
+func NewNewsHandler(service service.INewsService) handler.INewsHandler {
 	return NewsHandler{
 		service: service,
 	}

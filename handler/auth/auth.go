@@ -5,15 +5,16 @@ import (
 	"net/http"
 
 	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/server"
-	users "github.com/Arceister/ice-house-news/service/users"
+	"github.com/Arceister/ice-house-news/service"
 )
 
 type AuthHandler struct {
-	userService users.UsersService
+	userService service.IUsersService
 }
 
-func NewAuthHandler(userService users.UsersService) AuthHandler {
+func NewAuthHandler(userService service.IUsersService) handler.IAuthHandler {
 	return AuthHandler{
 		userService: userService,
 	}

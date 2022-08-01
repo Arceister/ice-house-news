@@ -1,7 +1,7 @@
 package router
 
 import (
-	comment "github.com/Arceister/ice-house-news/handler/comment"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/go-chi/chi/v5"
@@ -10,13 +10,13 @@ import (
 type CommentRoute struct {
 	server         server.Server
 	middlewareJWT  middleware.MiddlewareJWT
-	commentHandler comment.CommentHandler
+	commentHandler handler.ICommentHandler
 }
 
 func NewCommentRoute(
 	server server.Server,
 	middlewareJWT middleware.MiddlewareJWT,
-	commentHandler comment.CommentHandler,
+	commentHandler handler.ICommentHandler,
 ) CommentRoute {
 	return CommentRoute{
 		server:         server,

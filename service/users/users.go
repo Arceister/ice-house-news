@@ -5,21 +5,22 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/middleware"
-	users "github.com/Arceister/ice-house-news/repository/users"
+	"github.com/Arceister/ice-house-news/repository"
+	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersService struct {
-	repository users.UsersRepository
+	repository repository.IUsersRepository
 	middleware middleware.MiddlewareJWT
 }
 
 func NewUsersService(
-	repository users.UsersRepository,
+	repository repository.IUsersRepository,
 	middleware middleware.MiddlewareJWT,
-) UsersService {
+) service.IUsersService {
 	return UsersService{
 		repository: repository,
 		middleware: middleware,

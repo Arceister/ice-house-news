@@ -2,15 +2,16 @@ package service
 
 import (
 	"github.com/Arceister/ice-house-news/entity"
-	categories "github.com/Arceister/ice-house-news/repository/categories"
+	"github.com/Arceister/ice-house-news/repository"
+	"github.com/Arceister/ice-house-news/service"
 	"github.com/google/uuid"
 )
 
 type CategoriesService struct {
-	repository categories.CategoriesRepository
+	repository repository.ICategoriesRepository
 }
 
-func NewCategoriesService(repository categories.CategoriesRepository) CategoriesService {
+func NewCategoriesService(repository repository.ICategoriesRepository) service.ICategoriesService {
 	return CategoriesService{
 		repository: repository,
 	}

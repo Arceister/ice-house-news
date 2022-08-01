@@ -6,6 +6,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
+	"github.com/Arceister/ice-house-news/repository"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +14,7 @@ type CategoriesRepository struct {
 	db lib.DB
 }
 
-func NewCategoriesRepository(db lib.DB) CategoriesRepository {
+func NewCategoriesRepository(db lib.DB) repository.ICategoriesRepository {
 	return CategoriesRepository{
 		db: db,
 	}

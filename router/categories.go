@@ -1,19 +1,19 @@
 package router
 
 import (
-	categories "github.com/Arceister/ice-house-news/handler/categories"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/go-chi/chi/v5"
 )
 
 type CategoriesRoute struct {
 	server            server.Server
-	categoriesHandler categories.CategoriesHandler
+	categoriesHandler handler.ICategoriesHandler
 }
 
 func NewCategoriesRouter(
 	server server.Server,
-	categoriesHandler categories.CategoriesHandler,
+	categoriesHandler handler.ICategoriesHandler,
 ) CategoriesRoute {
 	return CategoriesRoute{
 		server:            server,
