@@ -4,40 +4,35 @@ import "net/http"
 
 func NewBadRequestError(message string) IErrorMessage {
 	return &ErrorMessage{
-		StatusCode:    http.StatusBadRequest,
-		ErrorResponse: "bad_request",
-		ErrorMessage:  message,
+		StatusCode:   http.StatusBadRequest,
+		ErrorMessage: message,
 	}
 }
 
 func NewUnauthorizedError(message string) IErrorMessage {
 	return &ErrorMessage{
-		StatusCode:    http.StatusUnauthorized,
-		ErrorResponse: "unauthorized",
-		ErrorMessage:  message,
+		StatusCode:   http.StatusUnauthorized,
+		ErrorMessage: message,
 	}
 }
 
 func NewNotFoundError(message string) IErrorMessage {
 	return &ErrorMessage{
-		StatusCode:    http.StatusNotFound,
-		ErrorResponse: "not_found",
-		ErrorMessage:  message,
+		StatusCode:   http.StatusNotFound,
+		ErrorMessage: message,
 	}
 }
 
 func NewUnprocessableEntityError(message string) IErrorMessage {
 	return &ErrorMessage{
-		StatusCode:    http.StatusUnprocessableEntity,
-		ErrorResponse: "unprocessable_entity",
-		ErrorMessage:  message,
+		StatusCode:   http.StatusUnprocessableEntity,
+		ErrorMessage: message,
 	}
 }
 
 func NewInternalServerError(message string) IErrorMessage {
 	return &ErrorMessage{
-		StatusCode:    http.StatusInternalServerError,
-		ErrorResponse: "internal_server_error",
-		ErrorMessage:  message,
+		StatusCode:   http.StatusInternalServerError,
+		ErrorMessage: message,
 	}
 }
