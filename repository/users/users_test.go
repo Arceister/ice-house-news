@@ -7,6 +7,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
+	"github.com/Arceister/ice-house-news/repository"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 )
@@ -26,7 +27,7 @@ func TestGetOneUserRepository(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		s        UsersRepository
+		s        repository.IUsersRepository
 		userUUID string
 		mock     func()
 		want     entity.User
@@ -42,7 +43,8 @@ func TestGetOneUserRepository(t *testing.T) {
 				).
 					AddRow("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "Jagad", "Bio", "Web", "Picture")
 
-				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").WillReturnRows(rows)
+				mock.ExpectPrepare("SELECT (.+) FROM users").
+					ExpectQuery().WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").WillReturnRows(rows)
 			},
 			want: entity.User{
 				Id:       uuid.MustParse("72908c48-b68c-4d67-ae74-d1305f84fc4d"),
@@ -63,7 +65,8 @@ func TestGetOneUserRepository(t *testing.T) {
 				rows := sqlmock.NewRows(
 					[]string{"id", "email", "password", "name", "bio", "web", "picture"},
 				)
-				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").WillReturnRows(rows)
+				mock.ExpectPrepare("SELECT (.+) FROM users").
+					ExpectQuery().WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").WillReturnRows(rows)
 			},
 			wantErr: true,
 		},
@@ -99,7 +102,7 @@ func TestGetUserByEmailRepository(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		s         UsersRepository
+		s         repository.IUsersRepository
 		userEmail string
 		mock      func()
 		want      entity.User
@@ -115,7 +118,8 @@ func TestGetUserByEmailRepository(t *testing.T) {
 				).
 					AddRow("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "Jagad", "Bio", "Web", "Picture")
 
-				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("testemail@email.com").WillReturnRows(rows)
+				mock.ExpectPrepare("SELECT (.+) FROM users").
+					ExpectQuery().WithArgs("testemail@email.com").WillReturnRows(rows)
 			},
 			want: entity.User{
 				Id:       uuid.MustParse("72908c48-b68c-4d67-ae74-d1305f84fc4d"),
@@ -138,7 +142,8 @@ func TestGetUserByEmailRepository(t *testing.T) {
 				).
 					AddRow("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "Jagad", "Bio", "Web", "Picture")
 
-				mock.ExpectQuery("SELECT (.+) FROM users").WithArgs("testemaik@email.com").WillReturnError(errors.New("user not found"))
+				mock.ExpectPrepare("SELECT (.+) FROM users").
+					ExpectQuery().WithArgs("testemaik@email.com").WillReturnError(errors.New("user not found"))
 			},
 			wantErr: true,
 		},
@@ -173,7 +178,7 @@ func TestCreateUserRepository(t *testing.T) {
 	)
 	tests := []struct {
 		name     string
-		s        UsersRepository
+		s        repository.IUsersRepository
 		userUUID uuid.UUID
 		request  entity.User
 		mock     func()
@@ -192,7 +197,8 @@ func TestCreateUserRepository(t *testing.T) {
 				Picture:  func(val string) *string { return &val }("Picture"),
 			},
 			mock: func() {
-				mock.ExpectExec("INSERT INTO users").
+				mock.ExpectPrepare("INSERT INTO users").
+					ExpectExec().
 					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "Jagad", "Bio", "Web", "Picture").
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
@@ -211,7 +217,8 @@ func TestCreateUserRepository(t *testing.T) {
 				Picture:  func(val string) *string { return &val }("Picture"),
 			},
 			mock: func() {
-				mock.ExpectExec("INSERT INTO users").
+				mock.ExpectPrepare("INSERT INTO users").
+					ExpectExec().
 					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d", "", "123", "Jagad", "Bio", "Web", "Picture").
 					WillReturnError(errors.New("empty email"))
 			},
@@ -249,7 +256,8 @@ func TestCreateUserRepository(t *testing.T) {
 				Picture:  func(val string) *string { return &val }("Picture"),
 			},
 			mock: func() {
-				mock.ExpectExec("INSERT INTO users").
+				mock.ExpectPrepare("INSERT INTO users").
+					ExpectExec().
 					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "", "Bio", "Web", "Picture").
 					WillReturnError(errors.New("empty name"))
 			},
@@ -268,7 +276,8 @@ func TestCreateUserRepository(t *testing.T) {
 				Picture:  func(val string) *string { return &val }("Picture"),
 			},
 			mock: func() {
-				mock.ExpectExec("INSERT INTO users").
+				mock.ExpectPrepare("INSERT INTO users").
+					ExpectExec().
 					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d", "testemail@email.com", "123", "Jagad", "Bio", "Web", "Picture").
 					WillReturnResult(sqlmock.NewErrorResult(errors.New("insert user failed")))
 			},
@@ -301,7 +310,7 @@ func TestUpdateUserRepository(t *testing.T) {
 	)
 	tests := []struct {
 		name     string
-		s        UsersRepository
+		s        repository.IUsersRepository
 		userUUID string
 		request  entity.User
 		mock     func()
@@ -320,7 +329,8 @@ func TestUpdateUserRepository(t *testing.T) {
 				Picture:  func(val string) *string { return &val }("updated picture"),
 			},
 			mock: func() {
-				mock.ExpectExec("UPDATE users").
+				mock.ExpectPrepare("UPDATE users").
+					ExpectExec().
 					WithArgs("updatedtestemail@email.com",
 						"updated password",
 						"updated name",
@@ -345,7 +355,8 @@ func TestUpdateUserRepository(t *testing.T) {
 				Picture:  func(val string) *string { return &val }("updated picture"),
 			},
 			mock: func() {
-				mock.ExpectExec("UPDATE users").
+				mock.ExpectPrepare("UPDATE users").
+					ExpectExec().
 					WithArgs("",
 						"updated password",
 						"updated name",
@@ -370,7 +381,8 @@ func TestUpdateUserRepository(t *testing.T) {
 				Picture:  func(val string) *string { return &val }("updated picture"),
 			},
 			mock: func() {
-				mock.ExpectExec("UPDATE users").
+				mock.ExpectPrepare("UPDATE users").
+					ExpectExec().
 					WithArgs("updatedtestemail@email.com",
 						"",
 						"updated name",
@@ -459,7 +471,7 @@ func TestDeleteUserRepository(t *testing.T) {
 	)
 	tests := []struct {
 		name     string
-		s        UsersRepository
+		s        repository.IUsersRepository
 		userUUID string
 		mock     func()
 		wantErr  bool
@@ -469,7 +481,8 @@ func TestDeleteUserRepository(t *testing.T) {
 			s:        app,
 			userUUID: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
 			mock: func() {
-				mock.ExpectExec("DELETE FROM users").
+				mock.ExpectPrepare("DELETE FROM users").
+					ExpectExec().
 					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
@@ -480,7 +493,8 @@ func TestDeleteUserRepository(t *testing.T) {
 			s:        app,
 			userUUID: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
 			mock: func() {
-				mock.ExpectExec("DELETE FROM users").
+				mock.ExpectPrepare("DELETE FROM users").
+					ExpectExec().
 					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4a").
 					WillReturnError(errors.New("user not found"))
 			},
