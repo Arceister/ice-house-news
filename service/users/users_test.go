@@ -133,3 +133,36 @@ func TestUsersService_SignIn_Success(t *testing.T) {
 	assert.EqualValues(t, userAuthenticationReturn.Scheme, "Bearer")
 	assert.NotNil(t, userAuthenticationReturn)
 }
+
+func TestUsersService_SignIn_Unauthorized(t *testing.T) {
+	mockRepository := NewRepositoryMock()
+	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
+
+	getUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
+		return entity.User{
+			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
+			Email:    "testemail@email.com",
+			Password: "$2a$10$nwPZff/XE2WrNKYzT6IHGepOaFFS1fJrP9jGXKWQ.JjX7YNlGPr6m",
+			Name:     "Jagad",
+			Bio:      func(val string) *string { return &val }("Bio"),
+			Web:      func(val string) *string { return &val }("Web"),
+			Picture:  func(val string) *string { return &val }("Picture"),
+		}, nil
+	}
+
+	userSignIn := entity.UserSignInRequest{
+		Email:    "testemail@email.com",
+		Password: "1234",
+	}
+
+	mockService := NewUsersService(mockRepository, middleware)
+	userAuthenticationReturn, err := mockService.SignInService(userSignIn)
+	if err == nil {
+		t.Fatal("No error detected, fail.")
+	}
+
+	assert.NotNil(t, err)
+	assert.EqualValues(t, userAuthenticationReturn, entity.UserAuthenticationReturn{})
+	assert.EqualValues(t, err.Status(), http.StatusUnauthorized)
+	assert.EqualValues(t, err.Message(), "wrong password")
+}
