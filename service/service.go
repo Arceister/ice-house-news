@@ -8,6 +8,7 @@ import (
 type IUsersService interface {
 	GetOneUserService(string) (entity.User, errorUtils.IErrorMessage)
 	SignInService(entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage)
+	ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage)
 	CreateUserService(entity.User) errorUtils.IErrorMessage
 	UpdateUserService(string, entity.User) errorUtils.IErrorMessage
 	DeleteUserService(string) errorUtils.IErrorMessage

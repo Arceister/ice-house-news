@@ -50,7 +50,7 @@ func main() {
 	commentHandler := _commentHandler.NewCommentHandler(commentService)
 
 	usersRouter := router.NewUsersRouter(chiRouter, jwtMiddleware, usersHandler)
-	authRouter := router.NewAuthRouter(chiRouter, authHandler)
+	authRouter := router.NewAuthRouter(chiRouter, jwtMiddleware, authHandler)
 	newsRouter := router.NewNewsRouter(chiRouter, jwtMiddleware, newsHandler)
 	categoriesRouter := router.NewCategoriesRouter(chiRouter, categoriesHandler)
 	commentRouter := router.NewCommentRoute(chiRouter, jwtMiddleware, commentHandler)

@@ -51,7 +51,7 @@ func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.
 
 	if errorMessage != nil && errorMessage.Message() == sql.ErrNoRows.Error() {
 		return signInSchema, errorUtils.NewNotFoundError("username/password not found")
-	} else if err != nil {
+	} else if errorMessage != nil {
 		return signInSchema, errorMessage
 	}
 
@@ -59,6 +59,30 @@ func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.
 
 	if err != nil {
 		return signInSchema, errorUtils.NewUnauthorizedError("wrong password")
+	}
+
+	token, expire, err := s.middleware.GenerateNewToken(userData)
+
+	if err != nil {
+		return signInSchema, errorUtils.NewInternalServerError(err.Error())
+	}
+
+	signInSchema.Token = *token
+	signInSchema.Scheme = "Bearer"
+	signInSchema.ExpiresAt = expire
+
+	return signInSchema, nil
+}
+
+func (s UsersService) ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
+	var signInSchema entity.UserAuthenticationReturn
+
+	userData, errorMessage := s.repository.GetOneUserRepository(userID)
+
+	if errorMessage != nil && errorMessage.Message() == sql.ErrNoRows.Error() {
+		return signInSchema, errorUtils.NewNotFoundError("user not found")
+	} else if errorMessage != nil {
+		return signInSchema, errorMessage
 	}
 
 	token, expire, err := s.middleware.GenerateNewToken(userData)

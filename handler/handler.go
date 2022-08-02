@@ -12,6 +12,7 @@ type IUsersHandler interface {
 
 type IAuthHandler interface {
 	UserSignInHandler(w http.ResponseWriter, r *http.Request)
+	ExtendTokenHandler(w http.ResponseWriter, r *http.Request)
 }
 
 type ICategoriesHandler interface {
