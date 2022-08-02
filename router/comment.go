@@ -10,13 +10,13 @@ import (
 type CommentRoute struct {
 	server         server.Server
 	middlewareJWT  middleware.MiddlewareJWT
-	commentHandler handler.CommentHandler
+	commentHandler handler.ICommentHandler
 }
 
 func NewCommentRoute(
 	server server.Server,
 	middlewareJWT middleware.MiddlewareJWT,
-	commentHandler handler.CommentHandler,
+	commentHandler handler.ICommentHandler,
 ) CommentRoute {
 	return CommentRoute{
 		server:         server,

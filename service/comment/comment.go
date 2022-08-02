@@ -3,25 +3,28 @@ package service
 import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/repository"
+	"github.com/Arceister/ice-house-news/service"
 	"github.com/google/uuid"
+
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 type CommentService struct {
-	newsRepository    repository.NewsRepository
-	commentRepository repository.CommentRepository
+	newsRepository    repository.INewsRepository
+	commentRepository repository.ICommentRepository
 }
 
 func NewCommentService(
-	newsRepository repository.NewsRepository,
-	commentRepository repository.CommentRepository,
-) CommentService {
+	newsRepository repository.INewsRepository,
+	commentRepository repository.ICommentRepository,
+) service.ICommentService {
 	return CommentService{
 		newsRepository:    newsRepository,
 		commentRepository: commentRepository,
 	}
 }
 
-func (s CommentService) GetCommentsOnNewsService(newsId string) ([]entity.Comment, error) {
+func (s CommentService) GetCommentsOnNewsService(newsId string) ([]entity.Comment, errorUtils.IErrorMessage) {
 	newsComment, err := s.commentRepository.GetCommentsOnNewsRepository(newsId)
 	if err != nil {
 		return nil, err
@@ -34,7 +37,7 @@ func (s CommentService) InsertCommentService(
 	commentRequest entity.CommentInsertRequest,
 	newsId string,
 	userId string,
-) error {
+) errorUtils.IErrorMessage {
 	var commentInsert entity.CommentInsert
 
 	newCommentUUID := uuid.Must(uuid.NewRandom())

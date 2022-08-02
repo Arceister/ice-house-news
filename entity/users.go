@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -21,4 +23,10 @@ type UserSignInRequest struct {
 
 type UserToken struct {
 	Token string `json:"token"`
+}
+
+type UserAuthenticationReturn struct {
+	Token     string    `json:"token"`
+	Scheme    string    `json:"scheme"`
+	ExpiresAt time.Time `json:"expires_at"`
 }

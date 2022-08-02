@@ -3,26 +3,35 @@ package repository
 import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/google/uuid"
+
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 type IUsersRepository interface {
-	GetOneUserRepository(string) (entity.User, error)
-	CreateUserRepository(uuid.UUID, entity.User) error
-	UpdateUserRepository(string, entity.User) error
-	DeleteUserRepository(string) error
+	GetOneUserRepository(string) (entity.User, errorUtils.IErrorMessage)
+	GetUserByEmailRepository(string) (entity.User, errorUtils.IErrorMessage)
+	CreateUserRepository(uuid.UUID, entity.User) errorUtils.IErrorMessage
+	UpdateUserRepository(string, entity.User) errorUtils.IErrorMessage
+	DeleteUserRepository(string) errorUtils.IErrorMessage
 }
 
 type ICategoriesRepository interface {
-	CreateCategoryRepository(entity.Categories) error
-	CreateAndReturnCategoryRepository(entity.Categories) (*uuid.UUID, error)
-	GetCategoryByNameRepository(string) (entity.Categories, error)
+	GetAllNewsCategoryRepository() ([]entity.Categories, errorUtils.IErrorMessage)
+	CreateCategoryRepository(categoryData entity.Categories) errorUtils.IErrorMessage
+	CreateAndReturnCategoryRepository(entity.Categories) (uuid.UUID, errorUtils.IErrorMessage)
+	GetCategoryByNameRepository(string) (entity.Categories, errorUtils.IErrorMessage)
 }
 
 type INewsRepository interface {
-	GetNewsListRepository() ([]entity.NewsListOutput, error)
-	GetNewsDetailRepository(string) (entity.NewsDetail, error)
-	GetNewsUserRepository(string) (*string, error)
-	AddNewNewsRepository(entity.NewsInsert) error
-	UpdateNewNewsRepository(entity.NewsInsert) error
-	DeleteNewsRepository(string) error
+	GetNewsListRepository() ([]entity.NewsListOutput, errorUtils.IErrorMessage)
+	GetNewsDetailRepository(string) (entity.NewsDetail, errorUtils.IErrorMessage)
+	GetNewsUserRepository(string) (string, errorUtils.IErrorMessage)
+	AddNewNewsRepository(entity.NewsInsert) errorUtils.IErrorMessage
+	UpdateNewsRepository(entity.NewsInsert) errorUtils.IErrorMessage
+	DeleteNewsRepository(string) errorUtils.IErrorMessage
+}
+
+type ICommentRepository interface {
+	GetCommentsOnNewsRepository(string) ([]entity.Comment, errorUtils.IErrorMessage)
+	InsertCommentRepository(entity.CommentInsert) errorUtils.IErrorMessage
 }

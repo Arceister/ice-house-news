@@ -3,15 +3,17 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Arceister/ice-house-news/server"
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/service"
+
+	response "github.com/Arceister/ice-house-news/server/response"
 )
 
 type CategoriesHandler struct {
-	service service.CategoriesService
+	service service.ICategoriesService
 }
 
-func NewCategoriesHandler(service service.CategoriesService) CategoriesHandler {
+func NewCategoriesHandler(service service.ICategoriesService) handler.ICategoriesHandler {
 	return CategoriesHandler{
 		service: service,
 	}
@@ -21,9 +23,9 @@ func (h CategoriesHandler) GetAllNewsCategoryHandler(w http.ResponseWriter, r *h
 	newsCategories, err := h.service.GetAllNewsCategoryService()
 
 	if err != nil {
-		server.ResponseJSON(w, http.StatusInternalServerError, false, err.Error())
+		response.ErrorResponse(w, err)
 		return
 	}
 
-	server.ResponseJSONData(w, http.StatusOK, true, "get all categories", newsCategories)
+	response.SuccessResponseWithData(w, http.StatusOK, "get all categories", newsCategories)
 }

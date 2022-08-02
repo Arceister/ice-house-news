@@ -1,23 +1,33 @@
 package service
 
-import "github.com/Arceister/ice-house-news/entity"
+import (
+	"github.com/Arceister/ice-house-news/entity"
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
+)
 
 type IUsersService interface {
-	GetOneUserService(string) (entity.User, error)
-	SignInService(entity.UserSignInRequest) (*string, error)
-	CreateUserService(entity.User) error
-	UpdateUserService(string, entity.User) error
-	DeleteUserService(string) error
+	GetOneUserService(string) (entity.User, errorUtils.IErrorMessage)
+	SignInService(entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage)
+	ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage)
+	CreateUserService(entity.User) errorUtils.IErrorMessage
+	UpdateUserService(string, entity.User) errorUtils.IErrorMessage
+	DeleteUserService(string) errorUtils.IErrorMessage
 }
 
 type ICategoriesService interface {
-	CreateCategoryService(string) error
+	GetAllNewsCategoryService() ([]entity.Categories, errorUtils.IErrorMessage)
+	CreateCategoryService(string) errorUtils.IErrorMessage
 }
 
 type INewsService interface {
-	GetNewsListService() ([]entity.NewsListOutput, error)
-	GetNewsDetailService(string) (entity.NewsDetail, error)
-	InsertNewsService(string, entity.NewsInputRequest) error
-	UpdateNewsService(string, string, entity.NewsInputRequest) error
-	DeleteNewsService(string, string) error
+	GetNewsListService() ([]entity.NewsListOutput, errorUtils.IErrorMessage)
+	GetNewsDetailService(string) (entity.NewsDetail, errorUtils.IErrorMessage)
+	InsertNewsService(string, entity.NewsInputRequest) errorUtils.IErrorMessage
+	UpdateNewsService(string, string, entity.NewsInputRequest) errorUtils.IErrorMessage
+	DeleteNewsService(string, string) errorUtils.IErrorMessage
+}
+
+type ICommentService interface {
+	GetCommentsOnNewsService(newsId string) ([]entity.Comment, errorUtils.IErrorMessage)
+	InsertCommentService(commentRequest entity.CommentInsertRequest, newsId string, userId string) errorUtils.IErrorMessage
 }
