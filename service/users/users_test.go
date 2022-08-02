@@ -298,3 +298,23 @@ func TestUsersService_ExtendToken_NotFound(t *testing.T) {
 	assert.EqualValues(t, err.Status(), http.StatusNotFound)
 	assert.EqualValues(t, err.Message(), "user not found")
 }
+
+func TestUsersService_ExtendToken_InternalServerError(t *testing.T) {
+	mockRepository := NewRepositoryMock()
+	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
+
+	getOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
+		return entity.User{}, errorUtils.NewInternalServerError("error message")
+	}
+
+	mockService := NewUsersService(mockRepository, middleware)
+	userAuthenticationReturn, err := mockService.ExtendToken("8db82f7e-5736-4430-a62c-2e735177d895")
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, err)
+	assert.EqualValues(t, userAuthenticationReturn, entity.UserAuthenticationReturn{})
+	assert.EqualValues(t, err.Status(), http.StatusInternalServerError)
+	assert.EqualValues(t, err.Message(), "error message")
+}
