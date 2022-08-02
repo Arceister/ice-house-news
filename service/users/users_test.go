@@ -418,3 +418,17 @@ func TestUsersService_UpdateUser_Failed(t *testing.T) {
 	assert.EqualValues(t, err.Status(), http.StatusInternalServerError)
 	assert.EqualValues(t, err.Message(), "error message")
 }
+
+func TestUsersService_DeleteUser_Success(t *testing.T) {
+	mockRepository := NewRepositoryMock()
+	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
+
+	deleteUser = func(id string) errorUtils.IErrorMessage {
+		return nil
+	}
+
+	mockService := NewUsersService(mockRepository, middleware)
+	err := mockService.DeleteUserService("8db82f7e-5736-4430-a62c-2e735177d895")
+
+	assert.Nil(t, err)
+}
