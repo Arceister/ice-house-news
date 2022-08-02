@@ -1,6 +1,7 @@
 package service
 
 import (
+	"net/http"
 	"testing"
 	"time"
 
@@ -78,4 +79,24 @@ func TestUsersService_GetOneUser_Success(t *testing.T) {
 	assert.EqualValues(t, userData.Bio, func(val string) *string { return &val }("Bio"))
 	assert.EqualValues(t, userData.Web, func(val string) *string { return &val }("Web"))
 	assert.EqualValues(t, userData.Picture, func(val string) *string { return &val }("Picture"))
+}
+
+func TestUsersService_GetOneUser_Failed(t *testing.T) {
+	mockRepository := NewRepositoryMock()
+	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
+
+	getOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
+		return entity.User{}, errorUtils.NewNotFoundError("user not found")
+	}
+
+	mockService := NewUsersService(mockRepository, middleware)
+	userData, err := mockService.GetOneUserService("8db82f7e-5736-4430-a62c-2e735177d895")
+	if err == nil {
+		t.Fatal("Didn't get errors")
+	}
+
+	assert.NotNil(t, err)
+	assert.Equal(t, userData, entity.User{})
+	assert.EqualValues(t, err.Message(), "user not found")
+	assert.EqualValues(t, err.Status(), http.StatusNotFound)
 }
