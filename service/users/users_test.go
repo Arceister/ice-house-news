@@ -225,3 +225,28 @@ func TestUsersService_SignIn_NotFound(t *testing.T) {
 	assert.EqualValues(t, err.Status(), http.StatusNotFound)
 	assert.EqualValues(t, err.Message(), "username/password not found")
 }
+
+func TestUsersService_SignIn_InternalServerError(t *testing.T) {
+	mockRepository := NewRepositoryMock()
+	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
+
+	getUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
+		return entity.User{}, errorUtils.NewInternalServerError("error message")
+	}
+
+	userSignIn := entity.UserSignInRequest{
+		Email:    "testemailinvalid@email.com",
+		Password: "123",
+	}
+
+	mockService := NewUsersService(mockRepository, middleware)
+	userAuthenticationReturn, err := mockService.SignInService(userSignIn)
+	if err == nil {
+		t.Fatal("No error detected, fail.")
+	}
+
+	assert.NotNil(t, err)
+	assert.EqualValues(t, userAuthenticationReturn, entity.UserAuthenticationReturn{})
+	assert.EqualValues(t, err.Status(), http.StatusInternalServerError)
+	assert.EqualValues(t, err.Message(), "error message")
+}
