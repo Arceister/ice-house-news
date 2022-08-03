@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
@@ -16,7 +15,6 @@ import (
 )
 
 var (
-	currentTime    = time.Now()
 	getOneUser     func(id string) (entity.User, errorUtils.IErrorMessage)
 	getUserByEmail func(email string) (entity.User, errorUtils.IErrorMessage)
 	createUser     func(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage
