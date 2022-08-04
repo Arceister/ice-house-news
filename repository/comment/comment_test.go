@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"reflect"
 	"testing"
 	"time"
@@ -12,6 +13,14 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
 )
+
+type AnyTime struct{}
+
+// Match satisfies sqlmock.Argument interface
+func (a AnyTime) Match(v driver.Value) bool {
+	_, ok := v.(time.Time)
+	return ok
+}
 
 func TestGetCommentOnNewsRepository(t *testing.T) {
 	db, mock, err := sqlmock.New()
@@ -108,6 +117,61 @@ func TestGetCommentOnNewsRepository(t *testing.T) {
 
 			if err != nil && !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestInsertCommentRepository(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	mockRepository := NewCommentRepository(
+		lib.DB{
+			DB: db,
+		},
+	)
+
+	tests := []struct {
+		name    string
+		app     repository.ICommentRepository
+		request entity.CommentInsert
+		mock    func()
+		wantErr bool
+	}{
+		{
+			name: "OK",
+			app:  mockRepository,
+			request: entity.CommentInsert{
+				Id:     uuid.MustParse("eb13e525-2e6b-42ea-832a-021bf39932cb"),
+				UserId: uuid.MustParse("c6b1b9f9-92e5-4638-806f-27fbb94546a2"),
+				NewsId: uuid.MustParse("3f441da6-4c57-4acb-869f-78469671c0fe"),
+				CommentInsertRequest: entity.CommentInsertRequest{
+					Description: "Comment",
+				},
+			},
+			mock: func() {
+				mock.ExpectPrepare("INSERT INTO news_comment").
+					ExpectExec().
+					WithArgs("eb13e525-2e6b-42ea-832a-021bf39932cb",
+						"3f441da6-4c57-4acb-869f-78469671c0fe",
+						"c6b1b9f9-92e5-4638-806f-27fbb94546a2",
+						"Comment",
+						AnyTime{}).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			err := tt.app.InsertCommentRepository(tt.request)
+			if (err != nil) != tt.wantErr {
+				t.Error(err)
+				return
 			}
 		})
 	}
