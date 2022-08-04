@@ -470,3 +470,41 @@ func TestUserHandler_Update_Error(t *testing.T) {
 	assert.EqualValues(t, false, httpResponse.Success)
 	assert.EqualValues(t, "error message", httpResponse.Message)
 }
+
+func TestUserHandler_DeleteUser_Success(t *testing.T) {
+	mockService := NewServiceMock()
+
+	type successStruct struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	deleteUser = func(s string) errorUtils.IErrorMessage {
+		return nil
+	}
+
+	mockHandler := NewUsersHandler(mockService)
+
+	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
+
+	req, err := http.NewRequest("DELETE", "http://localhost:5055/api/users/"+userId, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+
+	mockHandler.DeleteUserHandler(w, req)
+
+	var httpResponse successStruct
+	err = json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, httpResponse)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, w.Code)
+	assert.EqualValues(t, true, httpResponse.Success)
+	assert.EqualValues(t, "delete user success", httpResponse.Message)
+}
