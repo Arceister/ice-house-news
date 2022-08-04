@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -296,4 +297,49 @@ func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
 	assert.EqualValues(t, http.StatusInternalServerError, w.Code)
 	assert.EqualValues(t, false, httpResponse.Success)
 	assert.EqualValues(t, "error message", httpResponse.Message)
+}
+
+func TestUserHandler_CreateUser_Success(t *testing.T) {
+	mockService := NewServiceMock()
+
+	type successStruct struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	createUser = func(u entity.User) errorUtils.IErrorMessage {
+		return nil
+	}
+
+	mockHandler := NewUsersHandler(mockService)
+
+	jsonRequest := `{
+    "email": "e@a.com",
+    "password": "Hash",
+    "name": "Nama",
+    "bio": "Ini Bio",
+    "web": "Ini Web",
+    "picture": "Ini pict"
+	}`
+
+	req, err := http.NewRequest("POST", "http://localhost:5055/api/users/", bytes.NewBufferString(jsonRequest))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+
+	mockHandler.CreateUserHandler(w, req)
+
+	var httpResponse successStruct
+	err = json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, httpResponse)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusOK, w.Code)
+	assert.EqualValues(t, true, httpResponse.Success)
+	assert.EqualValues(t, "create user success", httpResponse.Message)
 }
