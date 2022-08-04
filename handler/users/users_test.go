@@ -343,3 +343,43 @@ func TestUserHandler_CreateUser_Success(t *testing.T) {
 	assert.EqualValues(t, true, httpResponse.Success)
 	assert.EqualValues(t, "create user success", httpResponse.Message)
 }
+
+func TestUserHandler_CreateUser_Error(t *testing.T) {
+	mockService := NewServiceMock()
+
+	type errorStruct struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	createUser = func(u entity.User) errorUtils.IErrorMessage {
+		return errorUtils.NewInternalServerError("error message")
+	}
+
+	mockHandler := NewUsersHandler(mockService)
+
+	jsonRequest := `{
+    ""
+	}`
+
+	req, err := http.NewRequest("POST", "http://localhost:5055/api/users/", bytes.NewBufferString(jsonRequest))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+
+	mockHandler.CreateUserHandler(w, req)
+
+	var httpResponse errorStruct
+	err = json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, httpResponse)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusInternalServerError, w.Code)
+	assert.EqualValues(t, false, httpResponse.Success)
+	assert.EqualValues(t, "error message", httpResponse.Message)
+}
