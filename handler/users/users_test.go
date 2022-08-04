@@ -233,3 +233,67 @@ func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
 	assert.EqualValues(t, func(val string) *string { return &val }("Web"), httpResponse.Data.Web)
 	assert.EqualValues(t, func(val string) *string { return &val }("Picture"), httpResponse.Data.Picture)
 }
+
+func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
+	mockService := NewServiceMock()
+
+	type errorStruct struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	getOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
+		return entity.User{}, errorUtils.NewInternalServerError("error message")
+	}
+
+	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
+
+	mockHandler := NewUsersHandler(mockService)
+	middlewareMock := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
+
+	fakeTokenString, _, err := middlewareMock.GenerateNewToken(
+		entity.User{
+			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
+			Email:    "testemail@email.com",
+			Password: "123",
+			Name:     "Jagad",
+			Bio:      func(val string) *string { return &val }("Bio"),
+			Web:      func(val string) *string { return &val }("Web"),
+			Picture:  func(val string) *string { return &val }("Picture"),
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fakeToken, err := jwt.Parse(*fakeTokenString, func(t *jwt.Token) (interface{}, error) {
+		return []byte("SECRET"), nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fakeClaims, _ := fakeToken.Claims.(jwt.MapClaims)
+
+	req, err := http.NewRequest("GET", "http://localhost:5055/api/users/"+userId, nil)
+	req = req.WithContext(context.WithValue(req.Context(), "JWTProps", fakeClaims))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+
+	mockHandler.GetOwnProfile(w, req)
+
+	var httpResponse errorStruct
+	err = json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, httpResponse)
+	assert.Nil(t, err)
+	assert.EqualValues(t, http.StatusInternalServerError, w.Code)
+	assert.EqualValues(t, false, httpResponse.Success)
+	assert.EqualValues(t, "error message", httpResponse.Message)
+}
