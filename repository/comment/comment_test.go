@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"reflect"
 	"testing"
 	"time"
@@ -70,6 +71,18 @@ func TestGetCommentOnNewsRepository(t *testing.T) {
 					CreatedAt: timePlaceholder,
 				},
 			},
+		},
+		{
+			name:   "Error",
+			app:    mockRepository,
+			newsId: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
+			mock: func() {
+				mock.ExpectPrepare("SELECT (.+) FROM (.+) JOIN (.+)").
+					ExpectQuery().
+					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").
+					WillReturnError(sql.ErrNoRows)
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
