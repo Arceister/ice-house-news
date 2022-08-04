@@ -11,54 +11,15 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/Arceister/ice-house-news/middleware"
-	"github.com/Arceister/ice-house-news/service"
+	usersServiceMock "github.com/Arceister/ice-house-news/service/mock/users"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	getOneUser  func(string) (entity.User, errorUtils.IErrorMessage)
-	signIn      func(entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage)
-	extendToken func(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage)
-	createUser  func(entity.User) errorUtils.IErrorMessage
-	updateUser  func(string, entity.User) errorUtils.IErrorMessage
-	deleteUser  func(string) errorUtils.IErrorMessage
-)
-
-type serviceMock struct{}
-
-func NewServiceMock() service.IUsersService {
-	return serviceMock{}
-}
-
-func (m serviceMock) GetOneUserService(id string) (entity.User, errorUtils.IErrorMessage) {
-	return getOneUser(id)
-}
-
-func (m serviceMock) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
-	return signIn(userInput)
-}
-
-func (m serviceMock) ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
-	return extendToken(userID)
-}
-
-func (m serviceMock) CreateUserService(userData entity.User) errorUtils.IErrorMessage {
-	return createUser(userData)
-}
-
-func (m serviceMock) UpdateUserService(id string, userData entity.User) errorUtils.IErrorMessage {
-	return updateUser(id, userData)
-}
-
-func (m serviceMock) DeleteUserService(id string) errorUtils.IErrorMessage {
-	return deleteUser(id)
-}
-
 func TestUserHandler_GetOneUser_Success(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type ResponseDataStruct struct {
 		entity.User
@@ -70,7 +31,7 @@ func TestUserHandler_GetOneUser_Success(t *testing.T) {
 		Data    ResponseDataStruct `json:"data"`
 	}
 
-	getOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
+	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{
 			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
 			Email:    "testemail@email.com",
@@ -115,14 +76,14 @@ func TestUserHandler_GetOneUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_GetOneUser_Error(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	getOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
+	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{}, errorUtils.NewInternalServerError("error message")
 	}
 
@@ -152,7 +113,7 @@ func TestUserHandler_GetOneUser_Error(t *testing.T) {
 }
 
 func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type ResponseDataStruct struct {
 		entity.User
@@ -164,7 +125,7 @@ func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
 		Data    ResponseDataStruct `json:"data"`
 	}
 
-	getOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
+	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{
 			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
 			Email:    "testemail@email.com",
@@ -236,14 +197,14 @@ func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
 }
 
 func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	getOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
+	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{}, errorUtils.NewInternalServerError("error message")
 	}
 
@@ -300,14 +261,14 @@ func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
 }
 
 func TestUserHandler_CreateUser_Success(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type successStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	createUser = func(u entity.User) errorUtils.IErrorMessage {
+	usersServiceMock.CreateUser = func(u entity.User) errorUtils.IErrorMessage {
 		return nil
 	}
 
@@ -345,14 +306,14 @@ func TestUserHandler_CreateUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_CreateUser_Error(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	createUser = func(u entity.User) errorUtils.IErrorMessage {
+	usersServiceMock.CreateUser = func(u entity.User) errorUtils.IErrorMessage {
 		return errorUtils.NewInternalServerError("error message")
 	}
 
@@ -385,14 +346,14 @@ func TestUserHandler_CreateUser_Error(t *testing.T) {
 }
 
 func TestUserHandler_UpdateUser_Success(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type successStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	updateUser = func(s string, u entity.User) errorUtils.IErrorMessage {
+	usersServiceMock.UpdateUser = func(s string, u entity.User) errorUtils.IErrorMessage {
 		return nil
 	}
 
@@ -431,14 +392,14 @@ func TestUserHandler_UpdateUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_UpdateUser_Error(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	updateUser = func(s string, u entity.User) errorUtils.IErrorMessage {
+	usersServiceMock.UpdateUser = func(s string, u entity.User) errorUtils.IErrorMessage {
 		return errorUtils.NewInternalServerError("error message")
 	}
 
@@ -472,14 +433,14 @@ func TestUserHandler_UpdateUser_Error(t *testing.T) {
 }
 
 func TestUserHandler_DeleteUser_Success(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type successStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	deleteUser = func(s string) errorUtils.IErrorMessage {
+	usersServiceMock.DeleteUser = func(s string) errorUtils.IErrorMessage {
 		return nil
 	}
 
@@ -510,14 +471,14 @@ func TestUserHandler_DeleteUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_DeleteUser_Error(t *testing.T) {
-	mockService := NewServiceMock()
+	mockService := usersServiceMock.NewServiceMock()
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	deleteUser = func(s string) errorUtils.IErrorMessage {
+	usersServiceMock.DeleteUser = func(s string) errorUtils.IErrorMessage {
 		return errorUtils.NewInternalServerError("error message")
 	}
 
