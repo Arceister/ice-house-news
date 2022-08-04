@@ -8,51 +8,17 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/Arceister/ice-house-news/middleware"
-	"github.com/Arceister/ice-house-news/repository"
+	userRepositoryMock "github.com/Arceister/ice-house-news/repository/mock/users"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	getOneUser     func(id string) (entity.User, errorUtils.IErrorMessage)
-	getUserByEmail func(email string) (entity.User, errorUtils.IErrorMessage)
-	createUser     func(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage
-	updateUser     func(id string, userInput entity.User) errorUtils.IErrorMessage
-	deleteUser     func(id string) errorUtils.IErrorMessage
-)
-
-type repositoryMock struct{}
-
-func NewRepositoryMock() repository.IUsersRepository {
-	return repositoryMock{}
-}
-
-func (m repositoryMock) GetOneUserRepository(id string) (entity.User, errorUtils.IErrorMessage) {
-	return getOneUser(id)
-}
-
-func (m repositoryMock) GetUserByEmailRepository(id string) (entity.User, errorUtils.IErrorMessage) {
-	return getUserByEmail(id)
-}
-
-func (m repositoryMock) CreateUserRepository(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
-	return createUser(id, userInput)
-}
-
-func (m repositoryMock) UpdateUserRepository(id string, userInput entity.User) errorUtils.IErrorMessage {
-	return updateUser(id, userInput)
-}
-
-func (m repositoryMock) DeleteUserRepository(id string) errorUtils.IErrorMessage {
-	return deleteUser(id)
-}
-
 func TestUsersService_GetOneUser_Success(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{
 			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
 			Email:    "testemail@email.com",
@@ -81,10 +47,10 @@ func TestUsersService_GetOneUser_Success(t *testing.T) {
 }
 
 func TestUsersService_GetOneUser_Failed(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{}, errorUtils.NewNotFoundError("user not found")
 	}
 
@@ -101,10 +67,10 @@ func TestUsersService_GetOneUser_Failed(t *testing.T) {
 }
 
 func TestUsersService_SignIn_Success(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{
 			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
 			Email:    "testemail@email.com",
@@ -134,10 +100,10 @@ func TestUsersService_SignIn_Success(t *testing.T) {
 }
 
 func TestUsersService_SignIn_Unauthorized(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{
 			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
 			Email:    "testemail@email.com",
@@ -167,10 +133,10 @@ func TestUsersService_SignIn_Unauthorized(t *testing.T) {
 }
 
 func TestUsersService_SignIn_UnprocessableEntity(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{
 			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
 			Email:    "testemail@email.com",
@@ -200,10 +166,10 @@ func TestUsersService_SignIn_UnprocessableEntity(t *testing.T) {
 }
 
 func TestUsersService_SignIn_NotFound(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{}, errorUtils.NewNotFoundError(sql.ErrNoRows.Error())
 	}
 
@@ -225,10 +191,10 @@ func TestUsersService_SignIn_NotFound(t *testing.T) {
 }
 
 func TestUsersService_SignIn_InternalServerError(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetUserByEmail = func(email string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{}, errorUtils.NewInternalServerError("error message")
 	}
 
@@ -250,10 +216,10 @@ func TestUsersService_SignIn_InternalServerError(t *testing.T) {
 }
 
 func TestUsersService_ExtendToken_Success(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{
 			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
 			Email:    "testemail@email.com",
@@ -278,10 +244,10 @@ func TestUsersService_ExtendToken_Success(t *testing.T) {
 }
 
 func TestUsersService_ExtendToken_NotFound(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{}, errorUtils.NewNotFoundError(sql.ErrNoRows.Error())
 	}
 
@@ -298,10 +264,10 @@ func TestUsersService_ExtendToken_NotFound(t *testing.T) {
 }
 
 func TestUsersService_ExtendToken_InternalServerError(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	getOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
+	userRepositoryMock.GetOneUser = func(id string) (entity.User, errorUtils.IErrorMessage) {
 		return entity.User{}, errorUtils.NewInternalServerError("error message")
 	}
 
@@ -318,10 +284,10 @@ func TestUsersService_ExtendToken_InternalServerError(t *testing.T) {
 }
 
 func TestUsersService_CreateUser_Success(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	createUser = func(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
+	userRepositoryMock.CreateUser = func(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
 		return nil
 	}
 
@@ -342,10 +308,10 @@ func TestUsersService_CreateUser_Success(t *testing.T) {
 }
 
 func TestUsersService_CreateUser_Failed(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	createUser = func(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
+	userRepositoryMock.CreateUser = func(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
 		return errorUtils.NewInternalServerError("error message")
 	}
 
@@ -368,10 +334,10 @@ func TestUsersService_CreateUser_Failed(t *testing.T) {
 }
 
 func TestUsersService_UpdateUser_Success(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	updateUser = func(id string, userInput entity.User) errorUtils.IErrorMessage {
+	userRepositoryMock.UpdateUser = func(id string, userInput entity.User) errorUtils.IErrorMessage {
 		return nil
 	}
 
@@ -392,10 +358,10 @@ func TestUsersService_UpdateUser_Success(t *testing.T) {
 }
 
 func TestUsersService_UpdateUser_Failed(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	updateUser = func(id string, userInput entity.User) errorUtils.IErrorMessage {
+	userRepositoryMock.UpdateUser = func(id string, userInput entity.User) errorUtils.IErrorMessage {
 		return errorUtils.NewInternalServerError("error message")
 	}
 
@@ -418,10 +384,10 @@ func TestUsersService_UpdateUser_Failed(t *testing.T) {
 }
 
 func TestUsersService_DeleteUser_Success(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	deleteUser = func(id string) errorUtils.IErrorMessage {
+	userRepositoryMock.DeleteUser = func(id string) errorUtils.IErrorMessage {
 		return nil
 	}
 
@@ -432,10 +398,10 @@ func TestUsersService_DeleteUser_Success(t *testing.T) {
 }
 
 func TestUsersService_DeleteUser_Failed(t *testing.T) {
-	mockRepository := NewRepositoryMock()
+	mockRepository := userRepositoryMock.NewRepositoryMock()
 	middleware := middleware.NewMiddlewareJWT(lib.App{Port: ":5000", SecretKey: "SECRET"})
 
-	deleteUser = func(id string) errorUtils.IErrorMessage {
+	userRepositoryMock.DeleteUser = func(id string) errorUtils.IErrorMessage {
 		return errorUtils.NewInternalServerError("error message")
 	}
 
