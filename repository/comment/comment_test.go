@@ -183,6 +183,29 @@ func TestInsertCommentRepository(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "Invalid Query",
+			app:  mockRepository,
+			request: entity.CommentInsert{
+				Id:     uuid.MustParse("eb13e525-2e6b-42ea-832a-021bf39932cb"),
+				UserId: uuid.MustParse("c6b1b9f9-92e5-4638-806f-27fbb94546a2"),
+				NewsId: uuid.MustParse("3f441da6-4c57-4acb-869f-78469671c0fe"),
+				CommentInsertRequest: entity.CommentInsertRequest{
+					Description: "Comment",
+				},
+			},
+			mock: func() {
+				mock.ExpectPrepare("INSERTTTTTTTTTT INTO news_comment").
+					ExpectExec().
+					WithArgs("eb13e525-2e6b-42ea-832a-021bf39932cb",
+						"3f441da6-4c57-4acb-869f-78469671c0fe",
+						"c6b1b9f9-92e5-4638-806f-27fbb94546a2",
+						"Comment",
+						AnyTime{}).
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
