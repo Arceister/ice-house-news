@@ -84,6 +84,18 @@ func TestGetCommentOnNewsRepository(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:   "Wrong Query",
+			app:    mockRepository,
+			newsId: "72908c48-b68c-4d67-ae74-d1305f84fc4d",
+			mock: func() {
+				mock.ExpectPrepare("SELECTTTTTTT (.+) FROM (.+) JOIN (.+)").
+					ExpectQuery().
+					WithArgs("72908c48-b68c-4d67-ae74-d1305f84fc4d").
+					WillReturnError(sql.ErrNoRows)
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
