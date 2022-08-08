@@ -5,30 +5,33 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/middleware"
-	"github.com/Arceister/ice-house-news/repository"
 	"github.com/Arceister/ice-house-news/service"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+
+	usersRepository "github.com/Arceister/ice-house-news/repository/users"
 )
 
+var _ service.IUsersService = (*UsersService)(nil)
+
 type UsersService struct {
-	repository repository.IUsersRepository
+	repository usersRepository.UsersRepository
 	middleware middleware.MiddlewareJWT
 }
 
 func NewUsersService(
-	repository repository.IUsersRepository,
+	repository usersRepository.UsersRepository,
 	middleware middleware.MiddlewareJWT,
-) service.IUsersService {
+) UsersService {
 	return UsersService{
 		repository: repository,
 		middleware: middleware,
 	}
 }
 
-func (s UsersService) GetOneUserService(id string) (entity.User, errorUtils.IErrorMessage) {
+func (s *UsersService) GetOneUserService(id string) (entity.User, errorUtils.IErrorMessage) {
 	userData, errorMessage := s.repository.GetOneUserRepository(id)
 
 	if errorMessage != nil {
@@ -38,7 +41,7 @@ func (s UsersService) GetOneUserService(id string) (entity.User, errorUtils.IErr
 	return userData, nil
 }
 
-func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
+func (s *UsersService) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
 	var signInSchema entity.UserAuthenticationReturn
 
 	validate := validator.New()
@@ -74,7 +77,7 @@ func (s UsersService) SignInService(userInput entity.UserSignInRequest) (entity.
 	return signInSchema, nil
 }
 
-func (s UsersService) ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
+func (s *UsersService) ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
 	var signInSchema entity.UserAuthenticationReturn
 
 	userData, errorMessage := s.repository.GetOneUserRepository(userID)
@@ -98,7 +101,7 @@ func (s UsersService) ExtendToken(userID string) (entity.UserAuthenticationRetur
 	return signInSchema, nil
 }
 
-func (s UsersService) CreateUserService(userData entity.User) errorUtils.IErrorMessage {
+func (s *UsersService) CreateUserService(userData entity.User) errorUtils.IErrorMessage {
 	uniqueUserId := uuid.Must(uuid.NewRandom())
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
@@ -117,7 +120,7 @@ func (s UsersService) CreateUserService(userData entity.User) errorUtils.IErrorM
 	return nil
 }
 
-func (s UsersService) UpdateUserService(id string, userData entity.User) errorUtils.IErrorMessage {
+func (s *UsersService) UpdateUserService(id string, userData entity.User) errorUtils.IErrorMessage {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userData.Password), 10)
 	if err != nil {
 		return errorUtils.NewInternalServerError(err.Error())
@@ -133,7 +136,7 @@ func (s UsersService) UpdateUserService(id string, userData entity.User) errorUt
 	return nil
 }
 
-func (s UsersService) DeleteUserService(id string) errorUtils.IErrorMessage {
+func (s *UsersService) DeleteUserService(id string) errorUtils.IErrorMessage {
 	errorMessage := s.repository.DeleteUserRepository(id)
 	if errorMessage != nil {
 		return errorMessage

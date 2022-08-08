@@ -1,22 +1,23 @@
 package router
 
 import (
-	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/go-chi/chi/v5"
+
+	newsHandler "github.com/Arceister/ice-house-news/handler/news"
 )
 
 type NewsRoute struct {
 	server        server.Server
 	middlewareJWT middleware.MiddlewareJWT
-	newsHandler   handler.INewsHandler
+	newsHandler   newsHandler.NewsHandler
 }
 
 func NewNewsRouter(
 	server server.Server,
 	middlewareJWT middleware.MiddlewareJWT,
-	newsHandler handler.INewsHandler,
+	newsHandler newsHandler.NewsHandler,
 ) NewsRoute {
 	return NewsRoute{
 		server:        server,

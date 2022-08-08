@@ -11,17 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
+var _ repository.IUsersRepository = (*UsersRepository)(nil)
+
 type UsersRepository struct {
 	db lib.DB
 }
 
-func NewUsersRepository(db lib.DB) repository.IUsersRepository {
+func NewUsersRepository(db lib.DB) UsersRepository {
 	return UsersRepository{
 		db: db,
 	}
 }
 
-func (u UsersRepository) GetOneUserRepository(id string) (entity.User, errorUtils.IErrorMessage) {
+func (u *UsersRepository) GetOneUserRepository(id string) (entity.User, errorUtils.IErrorMessage) {
 	userData := entity.User{}
 
 	stmt, err := u.db.DB.PrepareContext(context.Background(),
@@ -52,7 +54,7 @@ func (u UsersRepository) GetOneUserRepository(id string) (entity.User, errorUtil
 	return userData, nil
 }
 
-func (u UsersRepository) GetUserByEmailRepository(email string) (entity.User, errorUtils.IErrorMessage) {
+func (u *UsersRepository) GetUserByEmailRepository(email string) (entity.User, errorUtils.IErrorMessage) {
 	userData := entity.User{}
 
 	stmt, err := u.db.DB.PrepareContext(context.Background(),
@@ -79,7 +81,7 @@ func (u UsersRepository) GetUserByEmailRepository(email string) (entity.User, er
 	return userData, nil
 }
 
-func (u UsersRepository) CreateUserRepository(id uuid.UUID, userData entity.User) errorUtils.IErrorMessage {
+func (u *UsersRepository) CreateUserRepository(id uuid.UUID, userData entity.User) errorUtils.IErrorMessage {
 	stmt, err := u.db.DB.PrepareContext(context.Background(),
 		"INSERT INTO users VALUES($1, $2, $3, $4, $5, $6, $7)",
 	)
@@ -112,7 +114,7 @@ func (u UsersRepository) CreateUserRepository(id uuid.UUID, userData entity.User
 	return nil
 }
 
-func (u UsersRepository) UpdateUserRepository(id string, userData entity.User) errorUtils.IErrorMessage {
+func (u *UsersRepository) UpdateUserRepository(id string, userData entity.User) errorUtils.IErrorMessage {
 	stmt, err := u.db.DB.PrepareContext(context.Background(),
 		"UPDATE users SET email = $1, password = $2, name = $3, bio = $4, web = $5, picture = $6 WHERE id = $7",
 	)
@@ -146,7 +148,7 @@ func (u UsersRepository) UpdateUserRepository(id string, userData entity.User) e
 	return nil
 }
 
-func (u UsersRepository) DeleteUserRepository(id string) errorUtils.IErrorMessage {
+func (u *UsersRepository) DeleteUserRepository(id string) errorUtils.IErrorMessage {
 	stmt, err := u.db.DB.PrepareContext(context.Background(),
 		"DELETE FROM users WHERE id = $1",
 	)

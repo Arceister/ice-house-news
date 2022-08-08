@@ -14,17 +14,19 @@ import (
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
+var _ repository.INewsRepository = (*NewsRepository)(nil)
+
 type NewsRepository struct {
 	db lib.DB
 }
 
-func NewNewsRepository(db lib.DB) repository.INewsRepository {
+func NewNewsRepository(db lib.DB) NewsRepository {
 	return NewsRepository{
 		db: db,
 	}
 }
 
-func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
+func (r *NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
 	var NewsListOutput []entity.NewsListOutput
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
@@ -97,7 +99,7 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, errorU
 	return NewsListOutput, nil
 }
 
-func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
+func (r *NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
 	var NewsDetailOutput entity.NewsDetail
 	var category entity.NewsCategory
 	var counter entity.NewsCounter
@@ -210,7 +212,7 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	return NewsDetailOutput, nil
 }
 
-func (r NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtils.IErrorMessage) {
+func (r *NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtils.IErrorMessage) {
 	var newsUUID string
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`SELECT users_id FROM news WHERE id = $1`,
@@ -229,7 +231,7 @@ func (r NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtils
 	return newsUUID, nil
 }
 
-func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
+func (r *NewsRepository) AddNewNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
 	tx, err := r.db.DB.Begin()
 	if err != nil {
 		return errorUtils.NewInternalServerError(err.Error())
@@ -325,7 +327,7 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) errorUtils.
 	return nil
 }
 
-func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
+func (r *NewsRepository) UpdateNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`UPDATE news SET
 		category_id = $1,
@@ -367,7 +369,7 @@ func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) errorUtils.
 	return nil
 }
 
-func (r NewsRepository) DeleteNewsRepository(newsId string) errorUtils.IErrorMessage {
+func (r *NewsRepository) DeleteNewsRepository(newsId string) errorUtils.IErrorMessage {
 	commandTag, err := r.db.DB.Exec(
 		"DELETE FROM news WHERE id = $1", newsId)
 

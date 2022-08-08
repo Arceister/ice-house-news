@@ -5,24 +5,28 @@ import (
 	"fmt"
 
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/repository"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/google/uuid"
 
+	categoriesRepository "github.com/Arceister/ice-house-news/repository/categories"
+	newsRepository "github.com/Arceister/ice-house-news/repository/news"
+	usersRepository "github.com/Arceister/ice-house-news/repository/users"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
+var _ service.INewsService = (*NewsService)(nil)
+
 type NewsService struct {
-	newsRepository       repository.INewsRepository
-	usersRepository      repository.IUsersRepository
-	categoriesRepository repository.ICategoriesRepository
+	newsRepository       newsRepository.NewsRepository
+	usersRepository      usersRepository.UsersRepository
+	categoriesRepository categoriesRepository.CategoriesRepository
 }
 
 func NewNewsService(
-	newsRepository repository.INewsRepository,
-	usersRepository repository.IUsersRepository,
-	categoriesRepository repository.ICategoriesRepository,
-) service.INewsService {
+	newsRepository newsRepository.NewsRepository,
+	usersRepository usersRepository.UsersRepository,
+	categoriesRepository categoriesRepository.CategoriesRepository,
+) NewsService {
 	return NewsService{
 		newsRepository:       newsRepository,
 		usersRepository:      usersRepository,
@@ -30,11 +34,11 @@ func NewNewsService(
 	}
 }
 
-func (s NewsService) GetNewsListService() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
+func (s *NewsService) GetNewsListService() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
 	return s.newsRepository.GetNewsListRepository()
 }
 
-func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
+func (s *NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
 	newsDetail, err := s.newsRepository.GetNewsDetailRepository(newsId)
 
 	if err != nil {
@@ -44,7 +48,7 @@ func (s NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, err
 	return newsDetail, nil
 }
 
-func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsInputRequest) errorUtils.IErrorMessage {
+func (s *NewsService) InsertNewsService(userId string, newsInputData entity.NewsInputRequest) errorUtils.IErrorMessage {
 	var newsInsertData entity.NewsInsert
 
 	newsInsertData.NewsInputRequest = newsInputData
@@ -86,7 +90,7 @@ func (s NewsService) InsertNewsService(userId string, newsInputData entity.NewsI
 	return nil
 }
 
-func (s NewsService) UpdateNewsService(
+func (s *NewsService) UpdateNewsService(
 	userId string,
 	newsId string,
 	newsInputData entity.NewsInputRequest,
@@ -138,7 +142,7 @@ func (s NewsService) UpdateNewsService(
 	return nil
 }
 
-func (s NewsService) DeleteNewsService(
+func (s *NewsService) DeleteNewsService(
 	userId string,
 	newsId string,
 ) errorUtils.IErrorMessage {

@@ -2,24 +2,26 @@ package service
 
 import (
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/repository"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/google/uuid"
 
+	categoriesRepository "github.com/Arceister/ice-house-news/repository/categories"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
+var _ service.ICategoriesService = (*CategoriesService)(nil)
+
 type CategoriesService struct {
-	repository repository.ICategoriesRepository
+	repository categoriesRepository.CategoriesRepository
 }
 
-func NewCategoriesService(repository repository.ICategoriesRepository) service.ICategoriesService {
+func NewCategoriesService(repository categoriesRepository.CategoriesRepository) CategoriesService {
 	return CategoriesService{
 		repository: repository,
 	}
 }
 
-func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, errorUtils.IErrorMessage) {
+func (s *CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, errorUtils.IErrorMessage) {
 	categories, err := s.repository.GetAllNewsCategoryRepository()
 	if err != nil {
 		return nil, err
@@ -28,7 +30,7 @@ func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, err
 	return categories, nil
 }
 
-func (s CategoriesService) CreateCategoryService(categoryName string) errorUtils.IErrorMessage {
+func (s *CategoriesService) CreateCategoryService(categoryName string) errorUtils.IErrorMessage {
 	var categoriesData entity.Categories
 
 	newUuid := uuid.Must(uuid.NewRandom())
