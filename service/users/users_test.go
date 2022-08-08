@@ -8,7 +8,7 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/Arceister/ice-house-news/middleware"
-	userRepositoryMock "github.com/Arceister/ice-house-news/repository/mock/users"
+	userRepositoryMock "github.com/Arceister/ice-house-news/repository/mock"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

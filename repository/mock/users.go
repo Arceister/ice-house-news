@@ -4,6 +4,7 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/repository"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
@@ -16,7 +17,9 @@ var (
 	DeleteUser     func(id string) errorUtils.IErrorMessage
 )
 
-type repositoryMock struct{}
+type repositoryMock struct {
+	mock.Mock
+}
 
 func NewRepositoryMock() repository.IUsersRepository {
 	return repositoryMock{}
