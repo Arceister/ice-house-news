@@ -19,7 +19,7 @@ import (
 )
 
 func TestUserHandler_GetOneUser_Success(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type ResponseDataStruct struct {
 		entity.User
@@ -76,7 +76,7 @@ func TestUserHandler_GetOneUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_GetOneUser_Error(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
@@ -113,7 +113,7 @@ func TestUserHandler_GetOneUser_Error(t *testing.T) {
 }
 
 func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type ResponseDataStruct struct {
 		entity.User
@@ -197,7 +197,7 @@ func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
 }
 
 func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
@@ -261,7 +261,7 @@ func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
 }
 
 func TestUserHandler_CreateUser_Success(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type successStruct struct {
 		Success bool   `json:"success"`
@@ -306,7 +306,7 @@ func TestUserHandler_CreateUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_CreateUser_Error(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
@@ -346,7 +346,7 @@ func TestUserHandler_CreateUser_Error(t *testing.T) {
 }
 
 func TestUserHandler_UpdateUser_Success(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type successStruct struct {
 		Success bool   `json:"success"`
@@ -392,7 +392,7 @@ func TestUserHandler_UpdateUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_UpdateUser_Error(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type errorStruct struct {
 		Success bool   `json:"success"`
@@ -433,7 +433,7 @@ func TestUserHandler_UpdateUser_Error(t *testing.T) {
 }
 
 func TestUserHandler_DeleteUser_Success(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type successStruct struct {
 		Success bool   `json:"success"`
@@ -471,7 +471,7 @@ func TestUserHandler_DeleteUser_Success(t *testing.T) {
 }
 
 func TestUserHandler_DeleteUser_Error(t *testing.T) {
-	mockService := usersServiceMock.NewServiceMock()
+	mockService := new(usersServiceMock.UsersServiceMock)
 
 	type errorStruct struct {
 		Success bool   `json:"success"`

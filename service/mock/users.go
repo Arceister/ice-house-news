@@ -2,7 +2,6 @@ package service
 
 import (
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/service"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
@@ -15,32 +14,28 @@ var (
 	DeleteUser func(string) errorUtils.IErrorMessage
 )
 
-type serviceMock struct{}
+type UsersServiceMock struct{}
 
-func NewServiceMock() service.IUsersService {
-	return serviceMock{}
-}
-
-func (m serviceMock) GetOneUserService(id string) (entity.User, errorUtils.IErrorMessage) {
+func (m *UsersServiceMock) GetOneUserService(id string) (entity.User, errorUtils.IErrorMessage) {
 	return GetOneUser(id)
 }
 
-func (m serviceMock) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
+func (m *UsersServiceMock) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
 	return SignIn(userInput)
 }
 
-func (m serviceMock) ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
+func (m *UsersServiceMock) ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
 	return Extend(userID)
 }
 
-func (m serviceMock) CreateUserService(userData entity.User) errorUtils.IErrorMessage {
+func (m *UsersServiceMock) CreateUserService(userData entity.User) errorUtils.IErrorMessage {
 	return CreateUser(userData)
 }
 
-func (m serviceMock) UpdateUserService(id string, userData entity.User) errorUtils.IErrorMessage {
+func (m *UsersServiceMock) UpdateUserService(id string, userData entity.User) errorUtils.IErrorMessage {
 	return UpdateUser(id, userData)
 }
 
-func (m serviceMock) DeleteUserService(id string) errorUtils.IErrorMessage {
+func (m *UsersServiceMock) DeleteUserService(id string) errorUtils.IErrorMessage {
 	return DeleteUser(id)
 }
