@@ -21,8 +21,8 @@ type NewsRepository struct {
 	db lib.DB
 }
 
-func NewNewsRepository(db lib.DB) NewsRepository {
-	return NewsRepository{
+func NewNewsRepository(db lib.DB) *NewsRepository {
+	return &NewsRepository{
 		db: db,
 	}
 }

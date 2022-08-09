@@ -2,27 +2,26 @@ package service
 
 import (
 	"github.com/Arceister/ice-house-news/entity"
+	"github.com/Arceister/ice-house-news/repository"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 
-	commentRepository "github.com/Arceister/ice-house-news/repository/comment"
-	newsRepository "github.com/Arceister/ice-house-news/repository/news"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 var _ service.ICommentService = (*CommentService)(nil)
 
 type CommentService struct {
-	newsRepository    newsRepository.NewsRepository
-	commentRepository commentRepository.CommentRepository
+	newsRepository    repository.INewsRepository
+	commentRepository repository.ICommentRepository
 }
 
 func NewCommentService(
-	newsRepository newsRepository.NewsRepository,
-	commentRepository commentRepository.CommentRepository,
-) CommentService {
-	return CommentService{
+	newsRepository repository.INewsRepository,
+	commentRepository repository.ICommentRepository,
+) *CommentService {
+	return &CommentService{
 		newsRepository:    newsRepository,
 		commentRepository: commentRepository,
 	}

@@ -4,19 +4,19 @@ import (
 	"net/http"
 
 	"github.com/Arceister/ice-house-news/handler"
+	"github.com/Arceister/ice-house-news/service"
 
 	response "github.com/Arceister/ice-house-news/server/response"
-	categoriesService "github.com/Arceister/ice-house-news/service/categories"
 )
 
 var _ handler.ICategoriesHandler = (*CategoriesHandler)(nil)
 
 type CategoriesHandler struct {
-	service categoriesService.CategoriesService
+	service service.ICategoriesService
 }
 
-func NewCategoriesHandler(service categoriesService.CategoriesService) CategoriesHandler {
-	return CategoriesHandler{
+func NewCategoriesHandler(service service.ICategoriesService) *CategoriesHandler {
+	return &CategoriesHandler{
 		service: service,
 	}
 }

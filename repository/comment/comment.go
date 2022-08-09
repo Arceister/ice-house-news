@@ -16,8 +16,8 @@ type CommentRepository struct {
 	db lib.DB
 }
 
-func NewCommentRepository(db lib.DB) CommentRepository {
-	return CommentRepository{
+func NewCommentRepository(db lib.DB) *CommentRepository {
+	return &CommentRepository{
 		db: db,
 	}
 }

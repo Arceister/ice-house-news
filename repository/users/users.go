@@ -17,8 +17,8 @@ type UsersRepository struct {
 	db lib.DB
 }
 
-func NewUsersRepository(db lib.DB) UsersRepository {
-	return UsersRepository{
+func NewUsersRepository(db lib.DB) *UsersRepository {
+	return &UsersRepository{
 		db: db,
 	}
 }

@@ -1,23 +1,22 @@
 package router
 
 import (
+	"github.com/Arceister/ice-house-news/handler"
 	"github.com/Arceister/ice-house-news/middleware"
 	"github.com/Arceister/ice-house-news/server"
 	"github.com/go-chi/chi/v5"
-
-	authHandler "github.com/Arceister/ice-house-news/handler/auth"
 )
 
 type AuthRoute struct {
 	server        server.Server
 	middlewareJWT middleware.MiddlewareJWT
-	authHandler   authHandler.AuthHandler
+	authHandler   handler.IAuthHandler
 }
 
 func NewAuthRouter(
 	server server.Server,
 	middlewareJWT middleware.MiddlewareJWT,
-	authHandler authHandler.AuthHandler,
+	authHandler handler.IAuthHandler,
 ) AuthRoute {
 	return AuthRoute{
 		server:        server,

@@ -7,19 +7,18 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/handler"
 	response "github.com/Arceister/ice-house-news/server/response"
+	"github.com/Arceister/ice-house-news/service"
 	"github.com/golang-jwt/jwt/v4"
-
-	usersService "github.com/Arceister/ice-house-news/service/users"
 )
 
 var _ handler.IAuthHandler = (*AuthHandler)(nil)
 
 type AuthHandler struct {
-	userService usersService.UsersService
+	userService service.IUsersService
 }
 
-func NewAuthHandler(userService usersService.UsersService) AuthHandler {
-	return AuthHandler{
+func NewAuthHandler(userService service.IUsersService) *AuthHandler {
+	return &AuthHandler{
 		userService: userService,
 	}
 }
