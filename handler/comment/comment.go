@@ -13,12 +13,14 @@ import (
 	response "github.com/Arceister/ice-house-news/server/response"
 )
 
+var _ handler.ICommentHandler = (*CommentHandler)(nil)
+
 type CommentHandler struct {
 	service service.ICommentService
 }
 
-func NewCommentHandler(service service.ICommentService) handler.ICommentHandler {
-	return CommentHandler{
+func NewCommentHandler(service service.ICommentService) *CommentHandler {
+	return &CommentHandler{
 		service: service,
 	}
 }

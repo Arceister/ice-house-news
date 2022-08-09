@@ -9,12 +9,14 @@ import (
 	response "github.com/Arceister/ice-house-news/server/response"
 )
 
+var _ handler.ICategoriesHandler = (*CategoriesHandler)(nil)
+
 type CategoriesHandler struct {
 	service service.ICategoriesService
 }
 
-func NewCategoriesHandler(service service.ICategoriesService) handler.ICategoriesHandler {
-	return CategoriesHandler{
+func NewCategoriesHandler(service service.ICategoriesService) *CategoriesHandler {
+	return &CategoriesHandler{
 		service: service,
 	}
 }

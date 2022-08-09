@@ -9,17 +9,19 @@ import (
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
+var _ service.ICategoriesService = (*CategoriesService)(nil)
+
 type CategoriesService struct {
 	repository repository.ICategoriesRepository
 }
 
-func NewCategoriesService(repository repository.ICategoriesRepository) service.ICategoriesService {
-	return CategoriesService{
+func NewCategoriesService(repository repository.ICategoriesRepository) *CategoriesService {
+	return &CategoriesService{
 		repository: repository,
 	}
 }
 
-func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, errorUtils.IErrorMessage) {
+func (s *CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, errorUtils.IErrorMessage) {
 	categories, err := s.repository.GetAllNewsCategoryRepository()
 	if err != nil {
 		return nil, err
@@ -28,7 +30,7 @@ func (s CategoriesService) GetAllNewsCategoryService() ([]entity.Categories, err
 	return categories, nil
 }
 
-func (s CategoriesService) CreateCategoryService(categoryName string) errorUtils.IErrorMessage {
+func (s *CategoriesService) CreateCategoryService(categoryName string) errorUtils.IErrorMessage {
 	var categoriesData entity.Categories
 
 	newUuid := uuid.Must(uuid.NewRandom())

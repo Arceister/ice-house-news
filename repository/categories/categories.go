@@ -10,17 +10,19 @@ import (
 	"github.com/google/uuid"
 )
 
+var _ repository.ICategoriesRepository = (*CategoriesRepository)(nil)
+
 type CategoriesRepository struct {
 	db lib.DB
 }
 
-func NewCategoriesRepository(db lib.DB) repository.ICategoriesRepository {
-	return CategoriesRepository{
+func NewCategoriesRepository(db lib.DB) *CategoriesRepository {
+	return &CategoriesRepository{
 		db: db,
 	}
 }
 
-func (r CategoriesRepository) GetAllNewsCategoryRepository() ([]entity.Categories, errorUtils.IErrorMessage) {
+func (r *CategoriesRepository) GetAllNewsCategoryRepository() ([]entity.Categories, errorUtils.IErrorMessage) {
 	var NewsCategories []entity.Categories
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
@@ -55,7 +57,7 @@ func (r CategoriesRepository) GetAllNewsCategoryRepository() ([]entity.Categorie
 	return NewsCategories, nil
 }
 
-func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categories) errorUtils.IErrorMessage {
+func (r *CategoriesRepository) CreateCategoryRepository(categoryData entity.Categories) errorUtils.IErrorMessage {
 	stmt, err := r.db.DB.PrepareContext(context.Background(), "INSERT INTO categories(id, name) VALUES($1, $2)")
 	if err != nil {
 		return errorUtils.NewInternalServerError(err.Error())
@@ -82,7 +84,7 @@ func (r CategoriesRepository) CreateCategoryRepository(categoryData entity.Categ
 	return nil
 }
 
-func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.Categories) (uuid.UUID, errorUtils.IErrorMessage) {
+func (r *CategoriesRepository) CreateAndReturnCategoryRepository(category entity.Categories) (uuid.UUID, errorUtils.IErrorMessage) {
 	var returnedCategoryId uuid.UUID
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(), "INSERT INTO categories(id, name) VALUES($1, $2) RETURNING id")
@@ -101,7 +103,7 @@ func (r CategoriesRepository) CreateAndReturnCategoryRepository(category entity.
 	return returnedCategoryId, nil
 }
 
-func (r CategoriesRepository) GetCategoryByNameRepository(categoryName string) (entity.Categories, errorUtils.IErrorMessage) {
+func (r *CategoriesRepository) GetCategoryByNameRepository(categoryName string) (entity.Categories, errorUtils.IErrorMessage) {
 	var CategoryDetails entity.Categories
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(), "SELECT id, name FROM categories WHERE name = $1")

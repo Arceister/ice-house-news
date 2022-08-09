@@ -10,17 +10,19 @@ import (
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
+var _ repository.ICommentRepository = (*CommentRepository)(nil)
+
 type CommentRepository struct {
 	db lib.DB
 }
 
-func NewCommentRepository(db lib.DB) repository.ICommentRepository {
-	return CommentRepository{
+func NewCommentRepository(db lib.DB) *CommentRepository {
+	return &CommentRepository{
 		db: db,
 	}
 }
 
-func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.Comment, errorUtils.IErrorMessage) {
+func (r *CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.Comment, errorUtils.IErrorMessage) {
 	var CommentsList []entity.Comment
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
@@ -68,7 +70,7 @@ func (r CommentRepository) GetCommentsOnNewsRepository(newsId string) ([]entity.
 	return CommentsList, nil
 }
 
-func (r CommentRepository) InsertCommentRepository(commentDetails entity.CommentInsert) errorUtils.IErrorMessage {
+func (r *CommentRepository) InsertCommentRepository(commentDetails entity.CommentInsert) errorUtils.IErrorMessage {
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`
 		INSERT INTO news_comment(id, news_id, users_id, description, created_at) 
