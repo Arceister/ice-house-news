@@ -87,20 +87,21 @@ func TestUserHandler_GetOneUser_Error(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
-		return entity.User{}, errorUtils.NewInternalServerError("error message")
-	}
-
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
 
 	mockHandler := NewUsersHandler(mockService)
-	req, err := http.NewRequest("GET", "http://localhost:5055/api/users/"+userId, nil)
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:5055/api/users/"+userId, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+	routerCtx := chi.NewRouteContext()
+	routerCtx.URLParams.Add("uuid", userId)
+	req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
 
+	mockService.On("GetOneUserService", userId).
+		Return(entity.User{}, errorUtils.NewInternalServerError("error message")).Once()
 	mockHandler.GetOneUserHandler(w, req)
 
 	var httpResponse errorStruct
@@ -129,16 +130,14 @@ func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
 		Data    ResponseDataStruct `json:"data"`
 	}
 
-	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
-		return entity.User{
-			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
-			Email:    "testemail@email.com",
-			Password: "123",
-			Name:     "Jagad",
-			Bio:      func(val string) *string { return &val }("Bio"),
-			Web:      func(val string) *string { return &val }("Web"),
-			Picture:  func(val string) *string { return &val }("Picture"),
-		}, nil
+	mockResult := entity.User{
+		Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
+		Email:    "testemail@email.com",
+		Password: "123",
+		Name:     "Jagad",
+		Bio:      func(val string) *string { return &val }("Bio"),
+		Web:      func(val string) *string { return &val }("Web"),
+		Picture:  func(val string) *string { return &val }("Picture"),
 	}
 
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
@@ -170,13 +169,16 @@ func TestUserHandler_GetOwnProfile_Success(t *testing.T) {
 
 	fakeClaims, _ := fakeToken.Claims.(jwt.MapClaims)
 
-	req, err := http.NewRequest("GET", "http://localhost:5055/api/users/"+userId, nil)
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:5055/api/users/", nil)
 	req = req.WithContext(context.WithValue(req.Context(), "JWTProps", fakeClaims))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	mockService.On("GetOneUserService", userId).
+		Return(mockResult, nil).Once()
 
 	mockHandler.GetOwnProfile(w, req)
 
@@ -208,10 +210,6 @@ func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
-		return entity.User{}, errorUtils.NewInternalServerError("error message")
-	}
-
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
 
 	mockHandler := NewUsersHandler(mockService)
@@ -241,13 +239,16 @@ func TestUserHandler_GetOwnProfile_Error(t *testing.T) {
 
 	fakeClaims, _ := fakeToken.Claims.(jwt.MapClaims)
 
-	req, err := http.NewRequest("GET", "http://localhost:5055/api/users/"+userId, nil)
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:5055/api/users/"+userId, nil)
 	req = req.WithContext(context.WithValue(req.Context(), "JWTProps", fakeClaims))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	mockService.On("GetOneUserService", userId).
+		Return(entity.User{}, errorUtils.NewInternalServerError("error message")).Once()
 
 	mockHandler.GetOwnProfile(w, req)
 
@@ -272,10 +273,6 @@ func TestUserHandler_CreateUser_Success(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.CreateUser = func(u entity.User) errorUtils.IErrorMessage {
-		return nil
-	}
-
 	mockHandler := NewUsersHandler(mockService)
 
 	jsonRequest := `{
@@ -287,12 +284,24 @@ func TestUserHandler_CreateUser_Success(t *testing.T) {
     "picture": "Ini pict"
 	}`
 
-	req, err := http.NewRequest("POST", "http://localhost:5055/api/users/", bytes.NewBufferString(jsonRequest))
+	mockInput := entity.User{
+		Email:    "e@a.com",
+		Password: "Hash",
+		Name:     "Nama",
+		Bio:      func(val string) *string { return &val }("Ini Bio"),
+		Web:      func(val string) *string { return &val }("Ini Web"),
+		Picture:  func(val string) *string { return &val }("Ini pict"),
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:5055/api/users/", bytes.NewBufferString(jsonRequest))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	mockService.On("CreateUserService", mockInput).
+		Return(nil).Once()
 
 	mockHandler.CreateUserHandler(w, req)
 
@@ -317,22 +326,35 @@ func TestUserHandler_CreateUser_Error(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.CreateUser = func(u entity.User) errorUtils.IErrorMessage {
-		return errorUtils.NewInternalServerError("error message")
-	}
-
 	mockHandler := NewUsersHandler(mockService)
 
 	jsonRequest := `{
-    ""
+    "email": "e@a.com",
+    "password": "Hash",
+    "name": "Nama",
+    "bio": "Ini Bio",
+    "web": "Ini Web",
+    "picture": "Ini pict"
 	}`
 
-	req, err := http.NewRequest("POST", "http://localhost:5055/api/users/", bytes.NewBufferString(jsonRequest))
+	mockInput := entity.User{
+		Email:    "e@a.com",
+		Password: "Hash",
+		Name:     "Nama",
+		Bio:      func(val string) *string { return &val }("Ini Bio"),
+		Web:      func(val string) *string { return &val }("Ini Web"),
+		Picture:  func(val string) *string { return &val }("Ini pict"),
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:5055/api/users/", bytes.NewBufferString(jsonRequest))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	mockService.On("CreateUserService", mockInput).
+		Return(errorUtils.NewInternalServerError("error message")).Once()
 
 	mockHandler.CreateUserHandler(w, req)
 
@@ -357,13 +379,10 @@ func TestUserHandler_UpdateUser_Success(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.UpdateUser = func(s string, u entity.User) errorUtils.IErrorMessage {
-		return nil
-	}
-
 	mockHandler := NewUsersHandler(mockService)
 
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
+
 	jsonRequest := `{
     "email": "e@a.com",
     "password": "Hash",
@@ -373,12 +392,28 @@ func TestUserHandler_UpdateUser_Success(t *testing.T) {
     "picture": "Ini pict"
 	}`
 
-	req, err := http.NewRequest("PUT", "http://localhost:5055/api/users/"+userId, bytes.NewBufferString(jsonRequest))
+	mockInput := entity.User{
+		Email:    "e@a.com",
+		Password: "Hash",
+		Name:     "Nama",
+		Bio:      func(val string) *string { return &val }("Ini Bio"),
+		Web:      func(val string) *string { return &val }("Ini Web"),
+		Picture:  func(val string) *string { return &val }("Ini pict"),
+	}
+
+	req, err := http.NewRequest(http.MethodPut, "http://localhost:5055/api/users/"+userId, bytes.NewBufferString(jsonRequest))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	routerCtx := chi.NewRouteContext()
+	routerCtx.URLParams.Add("uuid", userId)
+	req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
+
+	mockService.On("UpdateUserService", userId, mockInput).
+		Return(nil).Once()
 
 	mockHandler.UpdateUserHandler(w, req)
 
@@ -403,23 +438,41 @@ func TestUserHandler_UpdateUser_Error(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.UpdateUser = func(s string, u entity.User) errorUtils.IErrorMessage {
-		return errorUtils.NewInternalServerError("error message")
-	}
-
 	mockHandler := NewUsersHandler(mockService)
 
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
+
 	jsonRequest := `{
-		""
+    "email": "e@a.com",
+    "password": "Hash",
+    "name": "Nama",
+    "bio": "Ini Bio",
+    "web": "Ini Web",
+    "picture": "Ini pict"
 	}`
 
-	req, err := http.NewRequest("PUT", "http://localhost:5055/api/users/"+userId, bytes.NewBufferString(jsonRequest))
+	mockInput := entity.User{
+		Email:    "e@a.com",
+		Password: "Hash",
+		Name:     "Nama",
+		Bio:      func(val string) *string { return &val }("Ini Bio"),
+		Web:      func(val string) *string { return &val }("Ini Web"),
+		Picture:  func(val string) *string { return &val }("Ini pict"),
+	}
+
+	req, err := http.NewRequest(http.MethodPut, "http://localhost:5055/api/users/"+userId, bytes.NewBufferString(jsonRequest))
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	routerCtx := chi.NewRouteContext()
+	routerCtx.URLParams.Add("uuid", userId)
+	req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
+
+	mockService.On("UpdateUserService", userId, mockInput).
+		Return(errorUtils.NewInternalServerError("error message")).Once()
 
 	mockHandler.UpdateUserHandler(w, req)
 
@@ -444,20 +497,23 @@ func TestUserHandler_DeleteUser_Success(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.DeleteUser = func(s string) errorUtils.IErrorMessage {
-		return nil
-	}
-
 	mockHandler := NewUsersHandler(mockService)
 
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
 
-	req, err := http.NewRequest("DELETE", "http://localhost:5055/api/users/"+userId, nil)
+	req, err := http.NewRequest(http.MethodDelete, "http://localhost:5055/api/users/"+userId, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	routerCtx := chi.NewRouteContext()
+	routerCtx.URLParams.Add("uuid", userId)
+	req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
+
+	mockService.On("DeleteUserService", userId).
+		Return(nil).Once()
 
 	mockHandler.DeleteUserHandler(w, req)
 
@@ -482,20 +538,23 @@ func TestUserHandler_DeleteUser_Error(t *testing.T) {
 		Message string `json:"message"`
 	}
 
-	usersServiceMock.DeleteUser = func(s string) errorUtils.IErrorMessage {
-		return errorUtils.NewInternalServerError("error message")
-	}
-
 	mockHandler := NewUsersHandler(mockService)
 
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
 
-	req, err := http.NewRequest("PUT", "http://localhost:5055/api/users/"+userId, nil)
+	req, err := http.NewRequest(http.MethodDelete, "http://localhost:5055/api/users/"+userId, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+
+	routerCtx := chi.NewRouteContext()
+	routerCtx.URLParams.Add("uuid", userId)
+	req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
+
+	mockService.On("DeleteUserService", userId).
+		Return(errorUtils.NewInternalServerError("error message")).Once()
 
 	mockHandler.DeleteUserHandler(w, req)
 

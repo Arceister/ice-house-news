@@ -28,21 +28,41 @@ func (m *UsersServiceMock) GetOneUserService(id string) (entity.User, errorUtils
 }
 
 func (m *UsersServiceMock) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
-	return SignIn(userInput)
+	args := m.Called(userInput)
+	if args.Get(1) == nil {
+		return args.Get(0).(entity.UserAuthenticationReturn), nil
+	}
+	return args.Get(0).(entity.UserAuthenticationReturn), args.Get(1).(errorUtils.IErrorMessage)
 }
 
 func (m *UsersServiceMock) ExtendToken(userID string) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {
-	return Extend(userID)
+	args := m.Called(userID)
+	if args.Get(1) == nil {
+		return args.Get(0).(entity.UserAuthenticationReturn), nil
+	}
+	return args.Get(0).(entity.UserAuthenticationReturn), args.Get(1).(errorUtils.IErrorMessage)
 }
 
 func (m *UsersServiceMock) CreateUserService(userData entity.User) errorUtils.IErrorMessage {
-	return CreateUser(userData)
+	args := m.Called(userData)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(errorUtils.IErrorMessage)
 }
 
 func (m *UsersServiceMock) UpdateUserService(id string, userData entity.User) errorUtils.IErrorMessage {
-	return UpdateUser(id, userData)
+	args := m.Called(id, userData)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(errorUtils.IErrorMessage)
 }
 
 func (m *UsersServiceMock) DeleteUserService(id string) errorUtils.IErrorMessage {
-	return DeleteUser(id)
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(errorUtils.IErrorMessage)
 }
