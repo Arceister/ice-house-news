@@ -2,7 +2,6 @@ package repository
 
 import (
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 
@@ -17,30 +16,26 @@ var (
 	DeleteUser     func(id string) errorUtils.IErrorMessage
 )
 
-type repositoryMock struct {
+type UserRepositoryMock struct {
 	mock.Mock
 }
 
-func NewRepositoryMock() repository.IUsersRepository {
-	return repositoryMock{}
-}
-
-func (m repositoryMock) GetOneUserRepository(id string) (entity.User, errorUtils.IErrorMessage) {
+func (m *UserRepositoryMock) GetOneUserRepository(id string) (entity.User, errorUtils.IErrorMessage) {
 	return GetOneUser(id)
 }
 
-func (m repositoryMock) GetUserByEmailRepository(id string) (entity.User, errorUtils.IErrorMessage) {
+func (m *UserRepositoryMock) GetUserByEmailRepository(id string) (entity.User, errorUtils.IErrorMessage) {
 	return GetUserByEmail(id)
 }
 
-func (m repositoryMock) CreateUserRepository(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
+func (m *UserRepositoryMock) CreateUserRepository(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
 	return CreateUser(id, userInput)
 }
 
-func (m repositoryMock) UpdateUserRepository(id string, userInput entity.User) errorUtils.IErrorMessage {
+func (m *UserRepositoryMock) UpdateUserRepository(id string, userInput entity.User) errorUtils.IErrorMessage {
 	return UpdateUser(id, userInput)
 }
 
-func (m repositoryMock) DeleteUserRepository(id string) errorUtils.IErrorMessage {
+func (m *UserRepositoryMock) DeleteUserRepository(id string) errorUtils.IErrorMessage {
 	return DeleteUser(id)
 }
