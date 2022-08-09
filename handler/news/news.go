@@ -26,7 +26,11 @@ func NewNewsHandler(service newsService.NewsService) NewsHandler {
 }
 
 func (h NewsHandler) GetNewsListHandler(w http.ResponseWriter, r *http.Request) {
-	newsList, err := h.service.GetNewsListService()
+	v := r.URL.Query()
+	scopeQuery := v.Get("scope")
+	categoryQuery := v.Get("category")
+
+	newsList, err := h.service.GetNewsListService(scopeQuery, categoryQuery)
 
 	if err != nil {
 		response.ErrorResponse(w, err)

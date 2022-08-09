@@ -23,7 +23,7 @@ type ICategoriesRepository interface {
 }
 
 type INewsRepository interface {
-	GetNewsListRepository() ([]entity.NewsListOutput, errorUtils.IErrorMessage)
+	GetNewsListRepository(int, string) ([]entity.NewsListOutput, errorUtils.IErrorMessage)
 	GetNewsDetailRepository(string) (entity.NewsDetail, errorUtils.IErrorMessage)
 	GetNewsUserRepository(string) (string, errorUtils.IErrorMessage)
 	AddNewNewsRepository(entity.NewsInsert) errorUtils.IErrorMessage

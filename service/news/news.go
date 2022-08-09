@@ -34,8 +34,22 @@ func NewNewsService(
 	}
 }
 
-func (s *NewsService) GetNewsListService() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
-	return s.newsRepository.GetNewsListRepository()
+func (s *NewsService) GetNewsListService(scopeQuery, categoryQuery string) ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
+	var scopeNumber int
+
+	switch scopeQuery {
+	case "top_news":
+		scopeNumber = 3
+	default:
+		scopeNumber = 0
+	}
+
+	newsList, err := s.newsRepository.GetNewsListRepository(scopeNumber, categoryQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	return newsList, nil
 }
 
 func (s *NewsService) GetNewsDetailService(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {

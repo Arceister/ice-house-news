@@ -20,7 +20,7 @@ type ICategoriesService interface {
 }
 
 type INewsService interface {
-	GetNewsListService() ([]entity.NewsListOutput, errorUtils.IErrorMessage)
+	GetNewsListService(string, string) ([]entity.NewsListOutput, errorUtils.IErrorMessage)
 	GetNewsDetailService(string) (entity.NewsDetail, errorUtils.IErrorMessage)
 	InsertNewsService(string, entity.NewsInputRequest) errorUtils.IErrorMessage
 	UpdateNewsService(string, string, entity.NewsInputRequest) errorUtils.IErrorMessage
