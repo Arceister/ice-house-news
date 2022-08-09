@@ -8,14 +8,6 @@ import (
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
-var (
-	GetOneUser     func(id string) (entity.User, errorUtils.IErrorMessage)
-	GetUserByEmail func(email string) (entity.User, errorUtils.IErrorMessage)
-	CreateUser     func(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage
-	UpdateUser     func(id string, userInput entity.User) errorUtils.IErrorMessage
-	DeleteUser     func(id string) errorUtils.IErrorMessage
-)
-
 type UserRepositoryMock struct {
 	mock.Mock
 }
