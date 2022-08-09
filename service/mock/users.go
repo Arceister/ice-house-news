@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/Arceister/ice-house-news/entity"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
+	"github.com/stretchr/testify/mock"
 )
 
 var (
@@ -14,10 +15,16 @@ var (
 	DeleteUser func(string) errorUtils.IErrorMessage
 )
 
-type UsersServiceMock struct{}
+type UsersServiceMock struct {
+	mock.Mock
+}
 
 func (m *UsersServiceMock) GetOneUserService(id string) (entity.User, errorUtils.IErrorMessage) {
-	return GetOneUser(id)
+	args := m.Called(id)
+	if args.Get(1) == nil {
+		return args.Get(0).(entity.User), nil
+	}
+	return args.Get(0).(entity.User), args.Get(1).(errorUtils.IErrorMessage)
 }
 
 func (m *UsersServiceMock) SignInService(userInput entity.UserSignInRequest) (entity.UserAuthenticationReturn, errorUtils.IErrorMessage) {

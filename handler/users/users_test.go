@@ -13,6 +13,7 @@ import (
 	"github.com/Arceister/ice-house-news/middleware"
 	usersServiceMock "github.com/Arceister/ice-house-news/service/mock"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
+	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -31,28 +32,31 @@ func TestUserHandler_GetOneUser_Success(t *testing.T) {
 		Data    ResponseDataStruct `json:"data"`
 	}
 
-	usersServiceMock.GetOneUser = func(s string) (entity.User, errorUtils.IErrorMessage) {
-		return entity.User{
-			Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
-			Email:    "testemail@email.com",
-			Password: "123",
-			Name:     "Jagad",
-			Bio:      func(val string) *string { return &val }("Bio"),
-			Web:      func(val string) *string { return &val }("Web"),
-			Picture:  func(val string) *string { return &val }("Picture"),
-		}, nil
+	mockResult := entity.User{
+		Id:       uuid.MustParse("8db82f7e-5736-4430-a62c-2e735177d895"),
+		Email:    "testemail@email.com",
+		Password: "123",
+		Name:     "Jagad",
+		Bio:      func(val string) *string { return &val }("Bio"),
+		Web:      func(val string) *string { return &val }("Web"),
+		Picture:  func(val string) *string { return &val }("Picture"),
 	}
 
 	userId := "8db82f7e-5736-4430-a62c-2e735177d895"
 
 	mockHandler := NewUsersHandler(mockService)
-	req, err := http.NewRequest("GET", "http://localhost:5055/api/users/"+userId, nil)
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:5055/api/users/"+userId, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
+	routerCtx := chi.NewRouteContext()
+	routerCtx.URLParams.Add("uuid", userId)
+	req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
 
+	mockService.On("GetOneUserService", userId).
+		Return(mockResult, nil).Once()
 	mockHandler.GetOneUserHandler(w, req)
 
 	var httpResponse successStruct
