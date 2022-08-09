@@ -21,21 +21,41 @@ type UserRepositoryMock struct {
 }
 
 func (m *UserRepositoryMock) GetOneUserRepository(id string) (entity.User, errorUtils.IErrorMessage) {
-	return GetOneUser(id)
+	args := m.Called(id)
+	if args.Get(1) == nil {
+		return args.Get(0).(entity.User), nil
+	}
+	return args.Get(0).(entity.User), args.Get(1).(errorUtils.IErrorMessage)
 }
 
-func (m *UserRepositoryMock) GetUserByEmailRepository(id string) (entity.User, errorUtils.IErrorMessage) {
-	return GetUserByEmail(id)
+func (m *UserRepositoryMock) GetUserByEmailRepository(email string) (entity.User, errorUtils.IErrorMessage) {
+	args := m.Called(email)
+	if args.Get(1) == nil {
+		return args.Get(0).(entity.User), nil
+	}
+	return args.Get(0).(entity.User), args.Get(1).(errorUtils.IErrorMessage)
 }
 
 func (m *UserRepositoryMock) CreateUserRepository(id uuid.UUID, userInput entity.User) errorUtils.IErrorMessage {
-	return CreateUser(id, userInput)
+	args := m.Called(id, userInput)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(errorUtils.IErrorMessage)
 }
 
 func (m *UserRepositoryMock) UpdateUserRepository(id string, userInput entity.User) errorUtils.IErrorMessage {
-	return UpdateUser(id, userInput)
+	args := m.Called(id, userInput)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(errorUtils.IErrorMessage)
 }
 
 func (m *UserRepositoryMock) DeleteUserRepository(id string) errorUtils.IErrorMessage {
-	return DeleteUser(id)
+	args := m.Called(id)
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).(errorUtils.IErrorMessage)
 }
