@@ -121,23 +121,23 @@ func TestCommentHandler_InsertComment(t *testing.T) {
 
 	mockHandler := NewCommentHandler(mockCommentService)
 
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:5055/api/news/%s/comment", newsId), bytes.NewBufferString(mockJSONRequest))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	w := httptest.NewRecorder()
-	routerCtx := chi.NewRouteContext()
-	routerCtx.URLParams.Add("newsId", newsId)
-
-	chiContext := context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx)
-	req = req.WithContext(context.WithValue(chiContext, "JWTProps", mockJWTClaims))
-
 	t.Run("Success", func(t *testing.T) {
 		type successStruct struct {
 			Success bool   `json:"success"`
 			Message string `json:"message"`
 		}
+
+		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:5055/api/news/%s/comment", newsId), bytes.NewBufferString(mockJSONRequest))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		w := httptest.NewRecorder()
+		routerCtx := chi.NewRouteContext()
+		routerCtx.URLParams.Add("newsId", newsId)
+
+		chiContext := context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx)
+		req = req.WithContext(context.WithValue(chiContext, "JWTProps", mockJWTClaims))
 
 		mockCommentService.On("InsertCommentService", mockComment, newsId, userId).
 			Return(nil).Once()
@@ -145,8 +145,8 @@ func TestCommentHandler_InsertComment(t *testing.T) {
 		mockHandler.InsertCommentHandler(w, req)
 
 		var httpResponse successStruct
-		err := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
-		if err != nil {
+		jsonUnmarshalErr := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+		if jsonUnmarshalErr != nil {
 			t.Fatal(err)
 		}
 
@@ -155,6 +155,44 @@ func TestCommentHandler_InsertComment(t *testing.T) {
 		assert.EqualValues(t, http.StatusOK, w.Code)
 		assert.EqualValues(t, true, httpResponse.Success)
 		assert.EqualValues(t, "insert comment success", httpResponse.Message)
+
+		mockCommentService.AssertExpectations(t)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		type errorStruct struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}
+
+		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://localhost:5055/api/news/%s/comment", newsId), bytes.NewBufferString(mockJSONRequest))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		w := httptest.NewRecorder()
+		routerCtx := chi.NewRouteContext()
+		routerCtx.URLParams.Add("newsId", newsId)
+
+		chiContext := context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx)
+		req = req.WithContext(context.WithValue(chiContext, "JWTProps", mockJWTClaims))
+
+		mockCommentService.On("InsertCommentService", mockComment, newsId, userId).
+			Return(errorUtils.NewInternalServerError("error message")).Once()
+
+		mockHandler.InsertCommentHandler(w, req)
+
+		var httpResponse errorStruct
+		jsonUnmarshalErr := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+		if jsonUnmarshalErr != nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, httpResponse)
+		assert.Nil(t, err)
+		assert.EqualValues(t, http.StatusInternalServerError, w.Code)
+		assert.EqualValues(t, false, httpResponse.Success)
+		assert.EqualValues(t, "error message", httpResponse.Message)
 
 		mockCommentService.AssertExpectations(t)
 	})
