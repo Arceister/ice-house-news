@@ -83,7 +83,6 @@ func TestCommentService_InsertComment(t *testing.T) {
 	mockService := NewCommentService(mockNewsRepo, mockCommentRepo)
 
 	t.Run("Success", func(t *testing.T) {
-
 		//Used mock.Anything because there's some random generation on UUID
 		mockCommentRepo.On("InsertCommentRepository", mock.Anything).
 			Return(nil).Once()
@@ -91,6 +90,18 @@ func TestCommentService_InsertComment(t *testing.T) {
 		err := mockService.InsertCommentService(commentInsertMock, newsId, userId)
 
 		assert.Nil(t, err)
+
+		mockCommentRepo.AssertExpectations(t)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		//Used mock.Anything because there's some random generation on UUID
+		mockCommentRepo.On("InsertCommentRepository", mock.Anything).
+			Return(errorUtils.NewInternalServerError("error message")).Once()
+
+		err := mockService.InsertCommentService(commentInsertMock, newsId, userId)
+
+		assert.NotNil(t, err)
 
 		mockCommentRepo.AssertExpectations(t)
 	})
