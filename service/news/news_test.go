@@ -142,4 +142,19 @@ func TestNewsService_GetNewsDetail(t *testing.T) {
 
 		mockNewsRepo.AssertExpectations(t)
 	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockNewsRepo.On("GetNewsDetailRepository", newsId).
+			Return(entity.NewsDetail{}, errorUtils.NewInternalServerError("error message")).Once()
+
+		news, err := mockNewsService.GetNewsDetailService(newsId)
+		if err == nil {
+			t.Fatal("Error should be nil")
+		}
+
+		assert.NotNil(t, err)
+		assert.EqualValues(t, entity.NewsDetail{}, news)
+
+		mockNewsRepo.AssertExpectations(t)
+	})
 }
