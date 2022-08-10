@@ -159,4 +159,33 @@ func TestAuthHandler_ExtendToken(t *testing.T) {
 
 		mockUserService.AssertExpectations(t)
 	})
+
+	t.Run("Error", func(t *testing.T) {
+		type errorStruct struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}
+
+		w := httptest.NewRecorder()
+		req = req.WithContext(context.WithValue(context.Background(), "JWTProps", mockJWTClaims))
+
+		mockUserService.On("ExtendToken", userId).
+			Return(entity.UserAuthenticationReturn{}, errorUtils.NewUnauthorizedError("token expired")).Once()
+
+		mockHandler.ExtendTokenHandler(w, req)
+
+		var httpResponse errorStruct
+		jsonUnmarshalErr := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+		if jsonUnmarshalErr != nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, httpResponse)
+		assert.Nil(t, err)
+		assert.EqualValues(t, http.StatusUnauthorized, w.Code)
+		assert.EqualValues(t, false, httpResponse.Success)
+		assert.EqualValues(t, "token expired", httpResponse.Message)
+
+		mockUserService.AssertExpectations(t)
+	})
 }
