@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +12,7 @@ import (
 	"github.com/Arceister/ice-house-news/entity"
 	serviceMock "github.com/Arceister/ice-house-news/service/mock"
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -104,6 +106,56 @@ func TestAuthHandler_UserSignInHandler(t *testing.T) {
 		assert.EqualValues(t, http.StatusUnauthorized, w.Code)
 		assert.EqualValues(t, false, httpResponse.Success)
 		assert.EqualValues(t, "invalid", httpResponse.Message)
+
+		mockUserService.AssertExpectations(t)
+	})
+}
+
+func TestAuthHandler_ExtendToken(t *testing.T) {
+	mockUserService := new(serviceMock.UsersServiceMock)
+
+	mockAuthReturn := entity.UserAuthenticationReturn{
+		Token:     "token",
+		Scheme:    "bearer",
+		ExpiresAt: time.Time{},
+	}
+	mockJWTClaims := jwt.MapClaims{
+		"id": "10adc3ce-62e5-4b0a-82e0-fad9cc4b2c37",
+	}
+	userId := "10adc3ce-62e5-4b0a-82e0-fad9cc4b2c37"
+
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:5055/api/auth/token", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mockHandler := NewAuthHandler(mockUserService)
+
+	t.Run("Success", func(t *testing.T) {
+		type successStruct struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}
+
+		w := httptest.NewRecorder()
+		req = req.WithContext(context.WithValue(context.Background(), "JWTProps", mockJWTClaims))
+
+		mockUserService.On("ExtendToken", userId).
+			Return(mockAuthReturn, nil).Once()
+
+		mockHandler.ExtendTokenHandler(w, req)
+
+		var httpResponse successStruct
+		jsonUnmarshalErr := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+		if jsonUnmarshalErr != nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, httpResponse)
+		assert.Nil(t, err)
+		assert.EqualValues(t, http.StatusOK, w.Code)
+		assert.EqualValues(t, true, httpResponse.Success)
+		assert.EqualValues(t, "Login successful", httpResponse.Message)
 
 		mockUserService.AssertExpectations(t)
 	})
