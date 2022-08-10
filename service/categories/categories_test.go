@@ -23,16 +23,17 @@ func TestCategoriesService_GetAllNewsCategory(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		mockCategoriesRepo.On("GetAllNewsCategoryRepository").
 			Return(mockCategories, nil).Once()
+
+		categories, err := mockCategoriesService.GetAllNewsCategoryService()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, categories)
+		assert.Nil(t, err)
+		assert.EqualValues(t, mockCategories, categories)
+
+		mockCategoriesRepo.AssertExpectations(t)
 	})
 
-	categories, err := mockCategoriesService.GetAllNewsCategoryService()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert.NotNil(t, categories)
-	assert.Nil(t, err)
-	assert.EqualValues(t, mockCategories, categories)
-
-	mockCategoriesRepo.AssertExpectations(t)
 }
