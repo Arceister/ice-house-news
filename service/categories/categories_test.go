@@ -72,4 +72,16 @@ func TestCategoriesService_CreateCategory(t *testing.T) {
 
 		mockCategoriesRepo.AssertExpectations(t)
 	})
+
+	t.Run("Success", func(t *testing.T) {
+		//Used mock.Anything because it generates random UUID
+		mockCategoriesRepo.On("CreateCategoryRepository", mock.Anything).
+			Return(errorUtils.NewInternalServerError("error message")).Once()
+
+		err := mockCategoriesService.CreateCategoryService(categoryName)
+
+		assert.NotNil(t, err)
+
+		mockCategoriesRepo.AssertExpectations(t)
+	})
 }
