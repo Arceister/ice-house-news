@@ -303,6 +303,18 @@ func TestGetNewsUserRepository(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:           "Invalid Query",
+			mockRepository: mockRepository,
+			newsId:         "922c7afd-643e-4e44-ab51-c80dc137674a",
+			mock: func() {
+				mock.ExpectPrepare("SELECTTTTTTTTT (.+) FROM news").
+					ExpectQuery().
+					WithArgs("922c7afd-643e-4e44-ab51-c80dc137674a").
+					WillReturnError(errors.New("error message"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
