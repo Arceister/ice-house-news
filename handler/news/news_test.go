@@ -59,7 +59,12 @@ func TestNewsHandler_GetNewsList(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		mockNewsService.On("GetNewsListService", "", "").
+		q := req.URL.Query()
+		q.Add("scope", "top_news")
+		q.Add("category", "Howak")
+		req.URL.RawQuery = q.Encode()
+
+		mockNewsService.On("GetNewsListService", "top_news", "Howak").
 			Return(mockNewsList, nil).Once()
 
 		mockHandler.GetNewsListHandler(w, req)
@@ -88,7 +93,12 @@ func TestNewsHandler_GetNewsList(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		mockNewsService.On("GetNewsListService", "", "").
+		q := req.URL.Query()
+		q.Add("scope", "top_news")
+		q.Add("category", "Howak")
+		req.URL.RawQuery = q.Encode()
+
+		mockNewsService.On("GetNewsListService", "top_news", "Howak").
 			Return(nil, errorUtils.NewInternalServerError("error message")).Once()
 
 		mockHandler.GetNewsListHandler(w, req)
