@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 	"time"
@@ -80,6 +81,16 @@ func TestGetNewsListRepository(t *testing.T) {
 					},
 				},
 			},
+		},
+		{
+			name:           "Error",
+			mockRepository: mockRepository,
+			scope:          3,
+			category:       "Howak",
+			mock: func() {
+				mock.ExpectPrepare("SELECT (.+) FROM news").ExpectQuery().WillReturnError(errors.New("get news list error"))
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
