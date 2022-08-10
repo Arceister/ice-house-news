@@ -202,6 +202,16 @@ func TestGetNewsDetailRepository(t *testing.T) {
 				Content: "Lorem Ipsum",
 			},
 		},
+		{
+			name:           "Failed at First Transaction",
+			mockRepository: mockRepository,
+			newsId:         "922c7afd-643e-4e44-ab51-c80dc137674a",
+			mock: func() {
+				mock.ExpectBegin()
+				mock.ExpectPrepare("SELECT (.+) FROM news").ExpectQuery().WillReturnError(errors.New("error message"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
