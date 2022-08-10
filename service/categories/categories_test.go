@@ -7,6 +7,8 @@ import (
 	repositoryMock "github.com/Arceister/ice-house-news/repository/mock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 func TestCategoriesService_GetAllNewsCategory(t *testing.T) {
@@ -32,6 +34,21 @@ func TestCategoriesService_GetAllNewsCategory(t *testing.T) {
 		assert.NotNil(t, categories)
 		assert.Nil(t, err)
 		assert.EqualValues(t, mockCategories, categories)
+
+		mockCategoriesRepo.AssertExpectations(t)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockCategoriesRepo.On("GetAllNewsCategoryRepository").
+			Return(nil, errorUtils.NewInternalServerError("error message")).Once()
+
+		categories, err := mockCategoriesService.GetAllNewsCategoryService()
+		if err == nil {
+			t.Fatal("Error should be not null")
+		}
+
+		assert.Nil(t, categories)
+		assert.NotNil(t, err)
 
 		mockCategoriesRepo.AssertExpectations(t)
 	})
