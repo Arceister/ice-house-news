@@ -77,6 +77,9 @@ func TestCommentService_InsertComment(t *testing.T) {
 	commentInsertMock := entity.CommentInsertRequest{
 		Description: "Some comment mock.",
 	}
+	commentFailedMock := entity.CommentInsertRequest{
+		Description: "",
+	}
 	newsId := "8a950b11-8037-4ad6-81fc-8e53cb0c670d"
 	userId := "d73a3c2d-b34a-48dc-8b25-e9c164355bc8"
 
@@ -100,6 +103,14 @@ func TestCommentService_InsertComment(t *testing.T) {
 			Return(errorUtils.NewInternalServerError("error message")).Once()
 
 		err := mockService.InsertCommentService(commentInsertMock, newsId, userId)
+
+		assert.NotNil(t, err)
+
+		mockCommentRepo.AssertExpectations(t)
+	})
+
+	t.Run("Validation Error", func(t *testing.T) {
+		err := mockService.InsertCommentService(commentFailedMock, newsId, userId)
 
 		assert.NotNil(t, err)
 
