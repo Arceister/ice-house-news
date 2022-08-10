@@ -10,6 +10,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	serviceMock "github.com/Arceister/ice-house-news/service/mock"
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,11 +31,6 @@ func TestAuthHandler_UserSignInHandler(t *testing.T) {
 
 	mockHandler := NewAuthHandler(mockUserService)
 
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:5055/api/auth/login", bytes.NewBufferString(mockJSONRequest))
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	t.Run("Success", func(t *testing.T) {
 		type successStruct struct {
 			Success bool                            `json:"success"`
@@ -45,6 +41,11 @@ func TestAuthHandler_UserSignInHandler(t *testing.T) {
 		userSignInRequest := entity.UserSignInRequest{
 			Email:    "testemail@email.com",
 			Password: "123",
+		}
+
+		req, err := http.NewRequest(http.MethodPost, "http://localhost:5055/api/auth/login", bytes.NewBufferString(mockJSONRequest))
+		if err != nil {
+			t.Fatal(err)
 		}
 
 		w := httptest.NewRecorder()
@@ -65,6 +66,44 @@ func TestAuthHandler_UserSignInHandler(t *testing.T) {
 		assert.EqualValues(t, http.StatusOK, w.Code)
 		assert.EqualValues(t, true, httpResponse.Success)
 		assert.EqualValues(t, "Login successful", httpResponse.Message)
+
+		mockUserService.AssertExpectations(t)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		type errorStruct struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}
+
+		userSignInRequest := entity.UserSignInRequest{
+			Email:    "testemail@email.com",
+			Password: "123",
+		}
+
+		req, err := http.NewRequest(http.MethodPost, "http://localhost:5055/api/auth/login", bytes.NewBufferString(mockJSONRequest))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		w := httptest.NewRecorder()
+
+		mockUserService.On("SignInService", userSignInRequest).
+			Return(entity.UserAuthenticationReturn{}, errorUtils.NewUnauthorizedError("invalid")).Once()
+
+		mockHandler.UserSignInHandler(w, req)
+
+		var httpResponse errorStruct
+		jsonUnmarshalErr := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+		if jsonUnmarshalErr != nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, httpResponse)
+		assert.Nil(t, err)
+		assert.EqualValues(t, http.StatusUnauthorized, w.Code)
+		assert.EqualValues(t, false, httpResponse.Success)
+		assert.EqualValues(t, "invalid", httpResponse.Message)
 
 		mockUserService.AssertExpectations(t)
 	})
