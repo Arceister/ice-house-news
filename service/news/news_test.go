@@ -8,6 +8,8 @@ import (
 	repositoryMock "github.com/Arceister/ice-house-news/repository/mock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 func TestNewsService_GetNewsList(t *testing.T) {
@@ -54,6 +56,22 @@ func TestNewsService_GetNewsList(t *testing.T) {
 
 		assert.NotNil(t, news)
 		assert.Nil(t, err)
+		assert.EqualValues(t, mockNewsList, news)
+
+		mockNewsRepo.AssertExpectations(t)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockNewsRepo.On("GetNewsListRepository", 3, "Howak").
+			Return(nil, errorUtils.NewInternalServerError("error message")).Once()
+
+		news, err := mockNewsService.GetNewsListService("top_news", "Howak")
+		if err == nil {
+			t.Fatal("Error should be nil")
+		}
+
+		assert.Nil(t, news)
+		assert.NotNil(t, err)
 
 		mockNewsRepo.AssertExpectations(t)
 	})
