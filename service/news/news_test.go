@@ -75,4 +75,19 @@ func TestNewsService_GetNewsList(t *testing.T) {
 
 		mockNewsRepo.AssertExpectations(t)
 	})
+
+	t.Run("Scope Undefined", func(t *testing.T) {
+		mockNewsRepo.On("GetNewsListRepository", 0, "Howak").
+			Return(nil, errorUtils.NewInternalServerError("error message")).Once()
+
+		news, err := mockNewsService.GetNewsListService("wrong scope", "Howak")
+		if err == nil {
+			t.Fatal("Error should be nil")
+		}
+
+		assert.Nil(t, news)
+		assert.NotNil(t, err)
+
+		mockNewsRepo.AssertExpectations(t)
+	})
 }
