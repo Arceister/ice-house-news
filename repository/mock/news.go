@@ -15,7 +15,7 @@ func (m *NewsRepositoryMock) GetNewsListRepository(scope int, category string) (
 	if args.Get(1) == nil {
 		return args.Get(0).([]entity.NewsListOutput), nil
 	}
-	return args.Get(0).([]entity.NewsListOutput), args.Get(1).(errorUtils.IErrorMessage)
+	return nil, args.Get(1).(errorUtils.IErrorMessage)
 }
 
 func (m *NewsRepositoryMock) GetNewsDetailRepository(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {

@@ -16,7 +16,7 @@ func (m *CommentRepositoryMock) GetCommentsOnNewsRepository(newsId string) ([]en
 	if args.Get(1) == nil {
 		return args.Get(0).([]entity.Comment), nil
 	}
-	return args.Get(0).([]entity.Comment), args.Get(1).(errorUtils.IErrorMessage)
+	return nil, args.Get(1).(errorUtils.IErrorMessage)
 }
 
 func (m *CommentRepositoryMock) InsertCommentRepository(commentData entity.CommentInsert) errorUtils.IErrorMessage {

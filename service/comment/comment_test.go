@@ -9,6 +9,8 @@ import (
 	repositoryMock "github.com/Arceister/ice-house-news/repository/mock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
 func Match(v driver.Value) bool {
@@ -35,6 +37,7 @@ func TestCommentService_GetComments(t *testing.T) {
 	newsId := "8a950b11-8037-4ad6-81fc-8e53cb0c670d"
 
 	mockService := NewCommentService(mockNewsRepo, mockCommentRepo)
+
 	t.Run("Success", func(t *testing.T) {
 		mockCommentRepo.On("GetCommentsOnNewsRepository", newsId).
 			Return(mockAllComment, nil).Once()
@@ -46,6 +49,21 @@ func TestCommentService_GetComments(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, mockAllComment, comment)
+
+		mockCommentRepo.AssertExpectations(t)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		mockCommentRepo.On("GetCommentsOnNewsRepository", newsId).
+			Return(nil, errorUtils.NewInternalServerError("error message")).Once()
+
+		comment, err := mockService.GetCommentsOnNewsService(newsId)
+		if err == nil {
+			t.Fatal("Error should be not null")
+		}
+
+		assert.NotNil(t, err)
+		assert.Nil(t, comment)
 
 		mockCommentRepo.AssertExpectations(t)
 	})
