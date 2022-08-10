@@ -212,6 +212,79 @@ func TestGetNewsDetailRepository(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name:           "OK",
+			mockRepository: mockRepository,
+			newsId:         "922c7afd-643e-4e44-ab51-c80dc137674a",
+			mock: func() {
+				rows := sqlmock.NewRows(
+					[]string{"n.id", "n.title", "n.slug_url", "n.cover_image", "additional_images", "n.nsfw",
+						"c.id", "c.name",
+						"u.id", "u.name", "u.picture",
+						"nc.upvote", "nc.downvote", "comment", "nc.view",
+						"n.created_at", "n.isi"},
+				).
+					AddRow("922c7afd-643e-4e44-ab51-c80dc137674a", "News Title", "news-title", "Cover", `[{"image": "ABC"}]`, false,
+						"d414197c-0fa0-46c1-ac29-69c4cdc0ed11", "Howak",
+						"e65d7793-bcc6-467c-88b1-9636ee745f45", "Name", "Picture",
+						10, 23, 2, 1000,
+						time.Time{}, "Lorem Ipsum")
+
+				mock.ExpectBegin()
+				mock.ExpectPrepare("SELECT (.+) FROM news").ExpectQuery().WillReturnRows(rows)
+				mock.ExpectPrepare("UPDATE news_counter (.+)").ExpectExec().WillReturnResult(sqlmock.NewResult(1, 1))
+				mock.ExpectCommit()
+			},
+			want: entity.NewsDetail{
+				Id:               uuid.MustParse("922c7afd-643e-4e44-ab51-c80dc137674a"),
+				Title:            "News Title",
+				SlugUrl:          "news-title",
+				CoverImage:       func(val string) *string { return &val }("Cover"),
+				AdditionalImages: []string{"ABC"},
+				CreatedAt:        time.Time{},
+				Nsfw:             false,
+				Category: entity.NewsCategory{
+					Id:   uuid.MustParse("d414197c-0fa0-46c1-ac29-69c4cdc0ed11"),
+					Name: "Howak",
+				},
+				Author: entity.NewsAuthor{
+					Id:      uuid.MustParse("e65d7793-bcc6-467c-88b1-9636ee745f45"),
+					Name:    "Name",
+					Picture: func(val string) *string { return &val }("Picture"),
+				},
+				Counter: entity.NewsCounter{
+					Upvote:   10,
+					Downvote: 23,
+					Comment:  2,
+					View:     1000,
+				},
+				Content: "Lorem Ipsum",
+			},
+		},
+		{
+			name:           "Failed at Second Transaction",
+			mockRepository: mockRepository,
+			newsId:         "922c7afd-643e-4e44-ab51-c80dc137674a",
+			mock: func() {
+				rows := sqlmock.NewRows(
+					[]string{"n.id", "n.title", "n.slug_url", "n.cover_image", "additional_images", "n.nsfw",
+						"c.id", "c.name",
+						"u.id", "u.name", "u.picture",
+						"nc.upvote", "nc.downvote", "comment", "nc.view",
+						"n.created_at", "n.isi"},
+				).
+					AddRow("922c7afd-643e-4e44-ab51-c80dc137674a", "News Title", "news-title", "Cover", `[{"image": "ABC"}]`, false,
+						"d414197c-0fa0-46c1-ac29-69c4cdc0ed11", "Howak",
+						"e65d7793-bcc6-467c-88b1-9636ee745f45", "Name", "Picture",
+						10, 23, 2, 1000,
+						time.Time{}, "Lorem Ipsum")
+
+				mock.ExpectBegin()
+				mock.ExpectPrepare("SELECT (.+) FROM news").ExpectQuery().WillReturnRows(rows)
+				mock.ExpectPrepare("UPDATE news_counter (.+)").ExpectExec().WillReturnError(errors.New("update failed"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
