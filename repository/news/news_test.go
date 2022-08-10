@@ -291,6 +291,18 @@ func TestGetNewsUserRepository(t *testing.T) {
 			},
 			want: "b46a18e7-6fae-4a0d-8179-317b856dd1ac",
 		},
+		{
+			name:           "Error",
+			mockRepository: mockRepository,
+			newsId:         "922c7afd-643e-4e44-ab51-c80dc137674a",
+			mock: func() {
+				mock.ExpectPrepare("SELECT (.+) FROM news").
+					ExpectQuery().
+					WithArgs("922c7afd-643e-4e44-ab51-c80dc137674a").
+					WillReturnError(errors.New("error message"))
+			},
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
