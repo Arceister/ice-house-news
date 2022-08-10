@@ -190,4 +190,35 @@ func TestNewsHandler_GetNewsDetail(t *testing.T) {
 
 		mockNewsService.AssertExpectations(t)
 	})
+
+	t.Run("Success", func(t *testing.T) {
+		type errorStruct struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}
+
+		w := httptest.NewRecorder()
+		routerCtx := chi.NewRouteContext()
+		routerCtx.URLParams.Add("newsId", newsId)
+		req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
+
+		mockNewsService.On("GetNewsDetailService", newsId).
+			Return(entity.NewsDetail{}, errorUtils.NewInternalServerError("error message")).Once()
+
+		mockHandler.GetNewsDetailHandler(w, req)
+
+		var httpResponse errorStruct
+		err := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, httpResponse)
+		assert.Nil(t, err)
+		assert.EqualValues(t, http.StatusInternalServerError, w.Code)
+		assert.EqualValues(t, false, httpResponse.Success)
+		assert.EqualValues(t, "error message", httpResponse.Message)
+
+		mockNewsService.AssertExpectations(t)
+	})
 }
