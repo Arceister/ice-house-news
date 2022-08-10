@@ -9,6 +9,7 @@ import (
 	repositoryMock "github.com/Arceister/ice-house-news/repository/mock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
@@ -64,6 +65,32 @@ func TestCommentService_GetComments(t *testing.T) {
 
 		assert.NotNil(t, err)
 		assert.Nil(t, comment)
+
+		mockCommentRepo.AssertExpectations(t)
+	})
+}
+
+func TestCommentService_InsertComment(t *testing.T) {
+	mockCommentRepo := new(repositoryMock.CommentRepositoryMock)
+	mockNewsRepo := new(repositoryMock.NewsRepositoryMock)
+
+	commentInsertMock := entity.CommentInsertRequest{
+		Description: "Some comment mock.",
+	}
+	newsId := "8a950b11-8037-4ad6-81fc-8e53cb0c670d"
+	userId := "d73a3c2d-b34a-48dc-8b25-e9c164355bc8"
+
+	mockService := NewCommentService(mockNewsRepo, mockCommentRepo)
+
+	t.Run("Success", func(t *testing.T) {
+
+		//Used mock.Anything because there's some random generation on UUID
+		mockCommentRepo.On("InsertCommentRepository", mock.Anything).
+			Return(nil).Once()
+
+		err := mockService.InsertCommentService(commentInsertMock, newsId, userId)
+
+		assert.Nil(t, err)
 
 		mockCommentRepo.AssertExpectations(t)
 	})
