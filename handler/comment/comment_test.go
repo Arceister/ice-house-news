@@ -130,10 +130,8 @@ func TestCommentHandler_InsertComment(t *testing.T) {
 	routerCtx := chi.NewRouteContext()
 	routerCtx.URLParams.Add("newsId", newsId)
 
-	firstContext := context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx)
-
-	// req = req.WithContext(context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx))
-	req = req.WithContext(context.WithValue(firstContext, "JWTProps", mockJWTClaims))
+	chiContext := context.WithValue(context.Background(), chi.RouteCtxKey, routerCtx)
+	req = req.WithContext(context.WithValue(chiContext, "JWTProps", mockJWTClaims))
 
 	t.Run("Success", func(t *testing.T) {
 		type successStruct struct {
