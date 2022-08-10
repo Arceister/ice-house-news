@@ -11,7 +11,7 @@ type CategoriesRepositoryMock struct {
 	mock.Mock
 }
 
-func (m *UserRepositoryMock) GetAllNewsCategoryRepository() ([]entity.Categories, errorUtils.IErrorMessage) {
+func (m *CategoriesRepositoryMock) GetAllNewsCategoryRepository() ([]entity.Categories, errorUtils.IErrorMessage) {
 	args := m.Called()
 	if args.Get(1) == nil {
 		return args.Get(0).([]entity.Categories), nil
@@ -19,7 +19,7 @@ func (m *UserRepositoryMock) GetAllNewsCategoryRepository() ([]entity.Categories
 	return nil, args.Get(1).(errorUtils.IErrorMessage)
 }
 
-func (m *UserRepositoryMock) CreateCategoryRepository(categoryData entity.Categories) errorUtils.IErrorMessage {
+func (m *CategoriesRepositoryMock) CreateCategoryRepository(categoryData entity.Categories) errorUtils.IErrorMessage {
 	args := m.Called(categoryData)
 	if args.Get(0) == nil {
 		return nil
@@ -27,15 +27,15 @@ func (m *UserRepositoryMock) CreateCategoryRepository(categoryData entity.Catego
 	return args.Get(0).(errorUtils.IErrorMessage)
 }
 
-func (m *UserRepositoryMock) CreateAndReturnCategoryRepository(entity.Categories) (uuid.UUID, errorUtils.IErrorMessage) {
-	args := m.Called()
+func (m *CategoriesRepositoryMock) CreateAndReturnCategoryRepository(categoryData entity.Categories) (uuid.UUID, errorUtils.IErrorMessage) {
+	args := m.Called(categoryData)
 	if args.Get(1) == nil {
 		return args.Get(0).(uuid.UUID), nil
 	}
 	return uuid.Nil, args.Get(1).(errorUtils.IErrorMessage)
 }
 
-func (m *UserRepositoryMock) GetCategoryByNameRepository(name string) (entity.Categories, errorUtils.IErrorMessage) {
+func (m *CategoriesRepositoryMock) GetCategoryByNameRepository(name string) (entity.Categories, errorUtils.IErrorMessage) {
 	args := m.Called(name)
 	if args.Get(1) == nil {
 		return args.Get(0).(entity.Categories), nil
