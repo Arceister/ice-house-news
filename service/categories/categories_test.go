@@ -7,6 +7,7 @@ import (
 	repositoryMock "github.com/Arceister/ice-house-news/repository/mock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
@@ -52,5 +53,23 @@ func TestCategoriesService_GetAllNewsCategory(t *testing.T) {
 
 		mockCategoriesRepo.AssertExpectations(t)
 	})
+}
 
+func TestCategoriesService_CreateCategory(t *testing.T) {
+	mockCategoriesRepo := new(repositoryMock.CategoriesRepositoryMock)
+	mockCategoriesService := NewCategoriesService(mockCategoriesRepo)
+
+	categoryName := "Howak"
+
+	t.Run("Success", func(t *testing.T) {
+		//Used mock.Anything because it generates random UUID
+		mockCategoriesRepo.On("CreateCategoryRepository", mock.Anything).
+			Return(nil).Once()
+
+		err := mockCategoriesService.CreateCategoryService(categoryName)
+
+		assert.Nil(t, err)
+
+		mockCategoriesRepo.AssertExpectations(t)
+	})
 }
