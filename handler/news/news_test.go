@@ -9,6 +9,7 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	serviceMock "github.com/Arceister/ice-house-news/service/mock"
+	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -49,14 +50,14 @@ func TestNewsHandler_GetNewsList(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	w := httptest.NewRecorder()
-
 	t.Run("Success", func(t *testing.T) {
 		type successStruct struct {
 			Success bool                    `json:"success"`
 			Message string                  `json:"message"`
 			Data    []entity.NewsListOutput `json:"data"`
 		}
+
+		w := httptest.NewRecorder()
 
 		mockNewsService.On("GetNewsListService", "", "").
 			Return(mockNewsList, nil).Once()
@@ -75,6 +76,34 @@ func TestNewsHandler_GetNewsList(t *testing.T) {
 		assert.EqualValues(t, true, httpResponse.Success)
 		assert.EqualValues(t, "get news list", httpResponse.Message)
 		assert.EqualValues(t, mockNewsList, httpResponse.Data)
+
+		mockNewsService.AssertExpectations(t)
+	})
+
+	t.Run("Error", func(t *testing.T) {
+		type errorStruct struct {
+			Success bool   `json:"success"`
+			Message string `json:"message"`
+		}
+
+		w := httptest.NewRecorder()
+
+		mockNewsService.On("GetNewsListService", "", "").
+			Return(nil, errorUtils.NewInternalServerError("error message")).Once()
+
+		mockHandler.GetNewsListHandler(w, req)
+
+		var httpResponse errorStruct
+		err := json.Unmarshal([]byte(w.Body.Bytes()), &httpResponse)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.NotNil(t, httpResponse)
+		assert.Nil(t, err)
+		assert.EqualValues(t, http.StatusInternalServerError, w.Code)
+		assert.EqualValues(t, false, httpResponse.Success)
+		assert.EqualValues(t, "error message", httpResponse.Message)
 
 		mockNewsService.AssertExpectations(t)
 	})
