@@ -26,7 +26,7 @@ func TestGetAllNewsCategoryRepository(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		app     CategoriesRepository
+		app     *CategoriesRepository
 		mock    func()
 		want    []entity.Categories
 		wantErr bool
@@ -41,7 +41,9 @@ func TestGetAllNewsCategoryRepository(t *testing.T) {
 					AddRow("6fae13cb-e8a4-46c4-b412-a0d41662e024", "International").
 					AddRow("28596a94-0ea8-4fd3-ad10-89df980decf3", "Sports")
 
-				mock.ExpectQuery("SELECT (.+) FROM categories").WillReturnRows(rows)
+				mock.ExpectPrepare("SELECT (.+) FROM categories").
+					ExpectQuery().
+					WillReturnRows(rows)
 			},
 			want: []entity.Categories{
 				{
@@ -64,7 +66,9 @@ func TestGetAllNewsCategoryRepository(t *testing.T) {
 					AddRow("6fae13cb-e8a4-46c4-b412-a0d41662e024", "International").
 					AddRow("28596a94-0ea8-4fd3-ad10-89df980decf3", "Sports")
 
-				mock.ExpectQuery("SELECT (.+) FROM categories").WillReturnError(errors.New("get all categories error"))
+				mock.ExpectPrepare("SELECT (.+) FROM categories").
+					ExpectQuery().
+					WillReturnError(errors.New("get all categories error"))
 			},
 			wantErr: true,
 		},
@@ -100,7 +104,7 @@ func TestCreateCategoryRepository(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		app     CategoriesRepository
+		app     *CategoriesRepository
 		request entity.Categories
 		mock    func()
 		wantErr bool
@@ -113,7 +117,8 @@ func TestCreateCategoryRepository(t *testing.T) {
 				Name: "Howak",
 			},
 			mock: func() {
-				mock.ExpectExec("INSERT INTO categories").
+				mock.ExpectPrepare("INSERT INTO categories").
+					ExpectExec().
 					WithArgs("28596a94-0ea8-4fd3-ad10-89df980decf3", "Howak").
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
@@ -126,7 +131,8 @@ func TestCreateCategoryRepository(t *testing.T) {
 				Name: "Howak",
 			},
 			mock: func() {
-				mock.ExpectExec("INSERT INTO categories").
+				mock.ExpectPrepare("INSERT INTO categories").
+					ExpectExec().
 					WithArgs("", "Howak").
 					WillReturnError(errors.New("user not created"))
 			},
@@ -161,7 +167,7 @@ func TestCreateAndReturnCategoryRepository(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		app     CategoriesRepository
+		app     *CategoriesRepository
 		request entity.Categories
 		mock    func()
 		want    uuid.UUID
@@ -179,7 +185,8 @@ func TestCreateAndReturnCategoryRepository(t *testing.T) {
 					[]string{"id"},
 				).AddRow("d0ff38ec-e438-4adb-9332-4a324d20a872")
 
-				mock.ExpectQuery("INSERT INTO categories").
+				mock.ExpectPrepare("INSERT INTO categories").
+					ExpectQuery().
 					WithArgs("d0ff38ec-e438-4adb-9332-4a324d20a872", "Internal").
 					WillReturnRows(rows)
 			},
@@ -193,7 +200,8 @@ func TestCreateAndReturnCategoryRepository(t *testing.T) {
 				Name: "Internal",
 			},
 			mock: func() {
-				mock.ExpectQuery("INSERT INTOOOOOOOO categories").
+				mock.ExpectPrepare("INSERT INTOOOOOOOO categories").
+					ExpectQuery().
 					WithArgs("d0ff38ec-e438-4adb-9332-4a324d20a872", "Internal").
 					WillReturnError(errors.New("invalid query"))
 			},
@@ -232,7 +240,7 @@ func TestGetCategoryByNameRepository(t *testing.T) {
 
 	tests := []struct {
 		name     string
-		app      CategoriesRepository
+		app      *CategoriesRepository
 		category string
 		mock     func()
 		want     entity.Categories
@@ -247,7 +255,8 @@ func TestGetCategoryByNameRepository(t *testing.T) {
 					[]string{"id", "name"},
 				).AddRow("d0ff38ec-e438-4adb-9332-4a324d20a872", "International")
 
-				mock.ExpectQuery("SELECT (.+) FROM categories WHERE name").
+				mock.ExpectPrepare("SELECT (.+) FROM categories WHERE name").
+					ExpectQuery().
 					WithArgs("International").
 					WillReturnRows(rows)
 			},
@@ -261,7 +270,8 @@ func TestGetCategoryByNameRepository(t *testing.T) {
 			app:      app,
 			category: "Intern",
 			mock: func() {
-				mock.ExpectQuery("INSERT INTOOOOOOOO categories").
+				mock.ExpectPrepare("INSERT INTOOOOOOOO categories").
+					ExpectQuery().
 					WithArgs("Internal").
 					WillReturnError(errors.New("invalid query"))
 			},
