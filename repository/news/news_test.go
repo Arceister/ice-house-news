@@ -252,3 +252,58 @@ func TestGetNewsDetailRepository(t *testing.T) {
 		})
 	}
 }
+
+func TestGetNewsUserRepository(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	mockRepository := NewNewsRepository(
+		lib.DB{
+			DB: db,
+		},
+	)
+
+	tests := []struct {
+		name           string
+		mockRepository *NewsRepository
+		newsId         string
+		mock           func()
+		want           string
+		wantErr        bool
+	}{
+		{
+			name:           "OK",
+			mockRepository: mockRepository,
+			newsId:         "922c7afd-643e-4e44-ab51-c80dc137674a",
+			mock: func() {
+				rows := sqlmock.NewRows(
+					[]string{"users_id"},
+				).
+					AddRow("b46a18e7-6fae-4a0d-8179-317b856dd1ac")
+
+				mock.ExpectPrepare("SELECT (.+) FROM news").
+					ExpectQuery().
+					WithArgs("922c7afd-643e-4e44-ab51-c80dc137674a").
+					WillReturnRows(rows)
+			},
+			want: "b46a18e7-6fae-4a0d-8179-317b856dd1ac",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := tt.mockRepository.GetNewsUserRepository(tt.newsId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Get() error new = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if err != nil && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Get() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
