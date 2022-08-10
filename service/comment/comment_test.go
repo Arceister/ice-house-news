@@ -46,5 +46,7 @@ func TestCommentService_GetComments(t *testing.T) {
 
 		assert.Nil(t, err)
 		assert.Equal(t, mockAllComment, comment)
+
+		mockCommentRepo.AssertExpectations(t)
 	})
 }
