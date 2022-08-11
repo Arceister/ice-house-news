@@ -8,8 +8,10 @@ import (
 
 	"github.com/Arceister/ice-house-news/entity"
 	"github.com/Arceister/ice-house-news/lib"
-	"github.com/Arceister/ice-house-news/server"
+	utils "github.com/Arceister/ice-house-news/utils/error"
 	"github.com/golang-jwt/jwt/v4"
+
+	response "github.com/Arceister/ice-house-news/server/response"
 )
 
 type MiddlewareJWT struct {
@@ -26,7 +28,7 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 		if len(authHeader) != 2 {
-			server.ResponseJSON(w, http.StatusUnauthorized, false, "Malformed token")
+			response.ErrorResponse(w, utils.NewUnauthorizedError("Malformed token"))
 			return
 		} else {
 			jwtToken := authHeader[1]
@@ -39,36 +41,38 @@ func (m MiddlewareJWT) JwtMiddleware(next http.Handler) http.Handler {
 				next.ServeHTTP(w, r.WithContext(ctx))
 			} else if verification, ok := err.(*jwt.ValidationError); ok {
 				if verification.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-					server.ResponseJSON(w, http.StatusUnauthorized, false, "Token expired")
+					response.ErrorResponse(w, utils.NewUnauthorizedError("Token expired"))
 					return
 				}
 			} else {
-				server.ResponseJSON(w, http.StatusUnauthorized, false, err.Error())
+				response.ErrorResponse(w, utils.NewUnauthorizedError(err.Error()))
 				return
 			}
 
 			if !token.Valid {
-				server.ResponseJSON(w, http.StatusInternalServerError, false, "Token invalid")
+				response.ErrorResponse(w, utils.NewUnauthorizedError("Token invalid"))
 				return
 			}
 		}
 	})
 }
 
-func (m MiddlewareJWT) GenerateNewToken(user entity.User) (*string, error) {
+func (m MiddlewareJWT) GenerateNewToken(user entity.User) (*string, time.Time, error) {
+	timeExpire := time.Now().AddDate(0, 0, 7)
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    user.Id,
 		"email": user.Email,
-		"exp":   time.Now().AddDate(0, 0, 7).Unix(),
+		"exp":   timeExpire.Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(m.appConfig.SecretKey))
 
 	if err != nil {
-		return nil, err
+		return nil, time.Time{}, err
 	}
 
-	return &tokenString, nil
+	return &tokenString, timeExpire, nil
 }
 
 func (m MiddlewareJWT) ExtractClaims(tokenString string) (jwt.MapClaims, error) {

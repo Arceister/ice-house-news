@@ -3,13 +3,23 @@ package main
 import (
 	"net/http"
 
-	"github.com/Arceister/ice-house-news/handler"
+	_authHandler "github.com/Arceister/ice-house-news/handler/auth"
+	_categoriesHandler "github.com/Arceister/ice-house-news/handler/categories"
+	_commentHandler "github.com/Arceister/ice-house-news/handler/comment"
+	_newsHandler "github.com/Arceister/ice-house-news/handler/news"
+	_usersHandler "github.com/Arceister/ice-house-news/handler/users"
 	"github.com/Arceister/ice-house-news/lib"
 	"github.com/Arceister/ice-house-news/middleware"
-	"github.com/Arceister/ice-house-news/repository"
+	_categoriesRepository "github.com/Arceister/ice-house-news/repository/categories"
+	_commentRepository "github.com/Arceister/ice-house-news/repository/comment"
+	_newsRepository "github.com/Arceister/ice-house-news/repository/news"
+	_usersRepository "github.com/Arceister/ice-house-news/repository/users"
 	"github.com/Arceister/ice-house-news/router"
 	server "github.com/Arceister/ice-house-news/server"
-	"github.com/Arceister/ice-house-news/service"
+	_categoriesService "github.com/Arceister/ice-house-news/service/categories"
+	_commentService "github.com/Arceister/ice-house-news/service/comment"
+	_newsService "github.com/Arceister/ice-house-news/service/news"
+	_usersService "github.com/Arceister/ice-house-news/service/users"
 )
 
 func main() {
@@ -23,28 +33,33 @@ func main() {
 
 	jwtMiddleware := middleware.NewMiddlewareJWT(app)
 
-	usersRepository := repository.NewUsersRepository(database)
-	newsRepository := repository.NewNewsRepository(database)
-	categoriesRepository := repository.NewCategoriesRepository(database)
+	usersRepository := _usersRepository.NewUsersRepository(database)
+	newsRepository := _newsRepository.NewNewsRepository(database)
+	categoriesRepository := _categoriesRepository.NewCategoriesRepository(database)
+	commentRepository := _commentRepository.NewCommentRepository(database)
 
-	usersService := service.NewUsersService(usersRepository, jwtMiddleware)
-	newsService := service.NewNewsService(newsRepository, usersRepository, categoriesRepository)
-	categoriesService := service.NewCategoriesService(categoriesRepository)
+	usersService := _usersService.NewUsersService(usersRepository, jwtMiddleware)
+	newsService := _newsService.NewNewsService(newsRepository, usersRepository, categoriesRepository)
+	categoriesService := _categoriesService.NewCategoriesService(categoriesRepository)
+	commentService := _commentService.NewCommentService(newsRepository, commentRepository)
 
-	usersHandler := handler.NewUsersHandler(usersService)
-	authHandler := handler.NewAuthHandler(usersService)
-	newsHandler := handler.NewNewsHandler(newsService)
-	categoriesHandler := handler.NewCategoriesHandler(categoriesService)
+	usersHandler := _usersHandler.NewUsersHandler(usersService)
+	authHandler := _authHandler.NewAuthHandler(usersService)
+	newsHandler := _newsHandler.NewNewsHandler(newsService)
+	categoriesHandler := _categoriesHandler.NewCategoriesHandler(categoriesService)
+	commentHandler := _commentHandler.NewCommentHandler(commentService)
 
 	usersRouter := router.NewUsersRouter(chiRouter, jwtMiddleware, usersHandler)
-	authRouter := router.NewAuthRouter(chiRouter, authHandler)
+	authRouter := router.NewAuthRouter(chiRouter, jwtMiddleware, authHandler)
 	newsRouter := router.NewNewsRouter(chiRouter, jwtMiddleware, newsHandler)
 	categoriesRouter := router.NewCategoriesRouter(chiRouter, categoriesHandler)
+	commentRouter := router.NewCommentRoute(chiRouter, jwtMiddleware, commentHandler)
 
 	usersRouter.Setup(chiRouter.Chi)
 	authRouter.Setup(chiRouter.Chi)
 	newsRouter.Setup(chiRouter.Chi)
 	categoriesRouter.Setup(chiRouter.Chi)
+	commentRouter.Setup(chiRouter.Chi)
 
 	http.ListenAndServe(app.Port, chiRouter.Chi)
 }

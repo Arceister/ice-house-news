@@ -10,13 +10,13 @@ import (
 type NewsRoute struct {
 	server        server.Server
 	middlewareJWT middleware.MiddlewareJWT
-	newsHandler   handler.NewsHandler
+	newsHandler   handler.INewsHandler
 }
 
 func NewNewsRouter(
 	server server.Server,
 	middlewareJWT middleware.MiddlewareJWT,
-	newsHandler handler.NewsHandler,
+	newsHandler handler.INewsHandler,
 ) NewsRoute {
 	return NewsRoute{
 		server:        server,

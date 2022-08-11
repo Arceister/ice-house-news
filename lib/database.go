@@ -1,15 +1,15 @@
 package lib
 
 import (
-	"context"
+	"database/sql"
 	"fmt"
 	"os"
 
-	"github.com/jackc/pgx/v4"
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 type DB struct {
-	DB *pgx.Conn
+	DB *sql.DB
 }
 
 func NewDB(env Database) DB {
@@ -21,7 +21,7 @@ func NewDB(env Database) DB {
 
 	DBUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", DBUsername, DBPassword, DBHost, DBPort, DBName)
 
-	db, err := pgx.Connect(context.Background(), DBUrl)
+	db, err := sql.Open("pgx", DBUrl)
 
 	if err != nil {
 		fmt.Println("Unable to connect to database!")

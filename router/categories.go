@@ -8,12 +8,12 @@ import (
 
 type CategoriesRoute struct {
 	server            server.Server
-	categoriesHandler handler.CategoriesHandler
+	categoriesHandler handler.ICategoriesHandler
 }
 
 func NewCategoriesRouter(
 	server server.Server,
-	categoriesHandler handler.CategoriesHandler,
+	categoriesHandler handler.ICategoriesHandler,
 ) CategoriesRoute {
 	return CategoriesRoute{
 		server:            server,
