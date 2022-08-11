@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,33 +15,47 @@ import (
 	errorUtils "github.com/Arceister/ice-house-news/utils/error"
 )
 
+var _ repository.INewsRepository = (*NewsRepository)(nil)
+
 type NewsRepository struct {
 	db lib.DB
 }
 
-func NewNewsRepository(db lib.DB) repository.INewsRepository {
-	return NewsRepository{
+func NewNewsRepository(db lib.DB) *NewsRepository {
+	return &NewsRepository{
 		db: db,
 	}
 }
 
-func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
+func (r *NewsRepository) GetNewsListRepository(scope int, category string) ([]entity.NewsListOutput, errorUtils.IErrorMessage) {
 	var NewsListOutput []entity.NewsListOutput
+	var scopeQuery string
+	var categoryQuery string
+
+	if scope > 0 {
+		scopeQuery = fmt.Sprintf("LIMIT %d", scope)
+	}
+
+	if len(category) > 0 {
+		categoryQuery = fmt.Sprintf("WHERE c.name = '%s'", category)
+	}
+
+	query := `
+	SELECT n.id, n.title, n.slug_url, n.cover_image, (
+			SELECT array_to_json(array_agg(row_to_json(t))) FROM ( SELECT image FROM news_additional_images WHERE news_id = n.id ) t
+			) as additional_images, n.nsfw,
+			c.id, c.name,
+			u.id, u.name, u.picture,
+			nc.upvote, nc.downvote, (SELECT COUNT(*) FROM news_comment WHERE news_id = n.id) as comment, nc.view,
+			n.created_at
+	FROM news n
+	JOIN categories c ON c.id = n.category_id
+	JOIN news_counter nc on n.id = nc.news_id
+	JOIN users u on n.users_id = u.id
+` + categoryQuery + scopeQuery
 
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
-		`
-		SELECT n.id, n.title, n.slug_url, n.cover_image, (
-				SELECT array_to_json(array_agg(row_to_json(t))) FROM ( SELECT image FROM news_additional_images WHERE news_id = n.id ) t
-				) as additional_images, n.nsfw,
-				c.id, c.name,
-				u.id, u.name, u.picture,
-				nc.upvote, nc.downvote, (SELECT COUNT(*) FROM news_comment WHERE news_id = n.id) as comment, nc.view,
-				n.created_at
-		FROM news n
-		JOIN categories c ON c.id = n.category_id
-		JOIN news_counter nc on n.id = nc.news_id
-		JOIN users u on n.users_id = u.id
-	`,
+		query,
 	)
 	if err != nil {
 		return NewsListOutput, errorUtils.NewInternalServerError(err.Error())
@@ -53,6 +68,10 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, errorU
 	}
 
 	defer rows.Close()
+
+	if rows.Err() != nil {
+		return nil, errorUtils.NewInternalServerError(rows.Err().Error())
+	}
 
 	for rows.Next() {
 		var news entity.NewsListOutput
@@ -94,10 +113,14 @@ func (r NewsRepository) GetNewsListRepository() ([]entity.NewsListOutput, errorU
 		NewsListOutput = append(NewsListOutput, news)
 	}
 
+	if NewsListOutput == nil {
+		return nil, errorUtils.NewNotFoundError("specified search not found")
+	}
+
 	return NewsListOutput, nil
 }
 
-func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
+func (r *NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetail, errorUtils.IErrorMessage) {
 	var NewsDetailOutput entity.NewsDetail
 	var category entity.NewsCategory
 	var counter entity.NewsCounter
@@ -210,7 +233,7 @@ func (r NewsRepository) GetNewsDetailRepository(newsId string) (entity.NewsDetai
 	return NewsDetailOutput, nil
 }
 
-func (r NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtils.IErrorMessage) {
+func (r *NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtils.IErrorMessage) {
 	var newsUUID string
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`SELECT users_id FROM news WHERE id = $1`,
@@ -229,7 +252,7 @@ func (r NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtils
 	return newsUUID, nil
 }
 
-func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
+func (r *NewsRepository) AddNewNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
 	tx, err := r.db.DB.Begin()
 	if err != nil {
 		return errorUtils.NewInternalServerError(err.Error())
@@ -325,7 +348,7 @@ func (r NewsRepository) AddNewNewsRepository(news entity.NewsInsert) errorUtils.
 	return nil
 }
 
-func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
+func (r *NewsRepository) UpdateNewsRepository(news entity.NewsInsert) errorUtils.IErrorMessage {
 	stmt, err := r.db.DB.PrepareContext(context.Background(),
 		`UPDATE news SET
 		category_id = $1,
@@ -367,7 +390,7 @@ func (r NewsRepository) UpdateNewsRepository(news entity.NewsInsert) errorUtils.
 	return nil
 }
 
-func (r NewsRepository) DeleteNewsRepository(newsId string) errorUtils.IErrorMessage {
+func (r *NewsRepository) DeleteNewsRepository(newsId string) errorUtils.IErrorMessage {
 	commandTag, err := r.db.DB.Exec(
 		"DELETE FROM news WHERE id = $1", newsId)
 

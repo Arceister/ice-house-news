@@ -11,12 +11,14 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+var _ handler.IAuthHandler = (*AuthHandler)(nil)
+
 type AuthHandler struct {
 	userService service.IUsersService
 }
 
-func NewAuthHandler(userService service.IUsersService) handler.IAuthHandler {
-	return AuthHandler{
+func NewAuthHandler(userService service.IUsersService) *AuthHandler {
+	return &AuthHandler{
 		userService: userService,
 	}
 }

@@ -13,18 +13,24 @@ import (
 	response "github.com/Arceister/ice-house-news/server/response"
 )
 
+var _ handler.INewsHandler = (*NewsHandler)(nil)
+
 type NewsHandler struct {
 	service service.INewsService
 }
 
-func NewNewsHandler(service service.INewsService) handler.INewsHandler {
-	return NewsHandler{
+func NewNewsHandler(service service.INewsService) *NewsHandler {
+	return &NewsHandler{
 		service: service,
 	}
 }
 
 func (h NewsHandler) GetNewsListHandler(w http.ResponseWriter, r *http.Request) {
-	newsList, err := h.service.GetNewsListService()
+	v := r.URL.Query()
+	scopeQuery := v.Get("scope")
+	categoryQuery := v.Get("category")
+
+	newsList, err := h.service.GetNewsListService(scopeQuery, categoryQuery)
 
 	if err != nil {
 		response.ErrorResponse(w, err)

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/Arceister/ice-house-news/entity"
-	"github.com/Arceister/ice-house-news/handler"
 	response "github.com/Arceister/ice-house-news/server/response"
 	"github.com/Arceister/ice-house-news/service"
 	"github.com/go-chi/chi/v5"
@@ -16,8 +15,8 @@ type UsersHandler struct {
 	service service.IUsersService
 }
 
-func NewUsersHandler(service service.IUsersService) handler.IUsersHandler {
-	return UsersHandler{
+func NewUsersHandler(service service.IUsersService) *UsersHandler {
+	return &UsersHandler{
 		service: service,
 	}
 }
