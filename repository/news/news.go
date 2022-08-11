@@ -242,7 +242,7 @@ func (r *NewsRepository) GetNewsUserRepository(newsId string) (string, errorUtil
 		return newsUUID, errorUtils.NewInternalServerError(err.Error())
 	}
 
-	err = stmt.QueryRow(context.Background(),
+	err = stmt.QueryRowContext(context.Background(),
 		newsId).Scan(&newsUUID)
 
 	if err != nil {
