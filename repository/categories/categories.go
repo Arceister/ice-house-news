@@ -63,7 +63,7 @@ func (r *CategoriesRepository) CreateCategoryRepository(categoryData entity.Cate
 		return errorUtils.NewInternalServerError(err.Error())
 	}
 
-	commandTag, err := stmt.Exec(context.Background(),
+	commandTag, err := stmt.ExecContext(context.Background(),
 		categoryData.Id,
 		categoryData.Name,
 	)
